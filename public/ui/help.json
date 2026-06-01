@@ -282,7 +282,7 @@
         "sourceTag": "span",
         "type": "custom",
         "children": [
-          "9 GAME MODES"
+          "10 GAME MODES"
         ],
         "properties": {
           "class": "section-title"
@@ -293,7 +293,7 @@
         "sourceTag": "span",
         "type": "custom",
         "children": [
-          "Classic | Speed | Target | Progressive | Daily | Tournament | Practice | Season | Custom"
+          "Classic | Speed | Target | Progressive | Daily | Tournament | Practice | Season | Custom | Endless"
         ],
         "properties": {
           "class": "help-text"
@@ -315,12 +315,23 @@
         "sourceTag": "span",
         "type": "custom",
         "children": [
-          "Custom: Set your own ball count, speed, wind, gravity, and more"
+          "Endless: Survive escalating waves! Moving targets + lane bumpers unlock as you progress"
         ],
         "properties": {
           "class": "help-text"
         },
         "dataUid": "uid-30"
+      },
+      {
+        "sourceTag": "span",
+        "type": "custom",
+        "children": [
+          "Custom: Set your own ball count, speed, wind, gravity, and more"
+        ],
+        "properties": {
+          "class": "help-text"
+        },
+        "dataUid": "uid-31"
       },
       {
         "type": "container",
@@ -339,14 +350,14 @@
                 "properties": {
                   "class": "tut-text"
                 },
-                "dataUid": "uid-33"
+                "dataUid": "uid-34"
               }
             ],
             "properties": {
               "id": "btn-tutorial-replay",
               "class": "tut-btn"
             },
-            "dataUid": "uid-32"
+            "dataUid": "uid-33"
           },
           {
             "type": "container",
@@ -361,20 +372,20 @@
                 "properties": {
                   "class": "back-text"
                 },
-                "dataUid": "uid-35"
+                "dataUid": "uid-36"
               }
             ],
             "properties": {
               "id": "btn-back-help",
               "class": "back-btn"
             },
-            "dataUid": "uid-34"
+            "dataUid": "uid-35"
           }
         ],
         "properties": {
           "class": "btn-row"
         },
-        "dataUid": "uid-31"
+        "dataUid": "uid-32"
       }
     ],
     "properties": {
@@ -578,7 +589,7 @@
         "column": 0
       },
       "end": {
-        "line": 46,
+        "line": 47,
         "column": 6
       }
     },
@@ -839,7 +850,7 @@
       },
       "end": {
         "line": 38,
-        "column": 49
+        "column": 50
       }
     },
     "uid-28": {
@@ -849,7 +860,7 @@
       },
       "end": {
         "line": 39,
-        "column": 121
+        "column": 131
       }
     },
     "uid-29": {
@@ -869,7 +880,7 @@
       },
       "end": {
         "line": 41,
-        "column": 96
+        "column": 120
       }
     },
     "uid-31": {
@@ -878,47 +889,57 @@
         "column": 2
       },
       "end": {
-        "line": 45,
-        "column": 8
+        "line": 42,
+        "column": 96
       }
     },
     "uid-32": {
       "start": {
         "line": 43,
-        "column": 4
+        "column": 2
       },
       "end": {
-        "line": 43,
-        "column": 94
+        "line": 46,
+        "column": 8
       }
     },
     "uid-33": {
       "start": {
-        "line": 43,
-        "column": 50
+        "line": 44,
+        "column": 4
       },
       "end": {
-        "line": 43,
-        "column": 88
+        "line": 44,
+        "column": 94
       }
     },
     "uid-34": {
       "start": {
         "line": 44,
-        "column": 4
+        "column": 50
       },
       "end": {
         "line": 44,
-        "column": 86
+        "column": 88
       }
     },
     "uid-35": {
       "start": {
-        "line": 44,
+        "line": 45,
+        "column": 4
+      },
+      "end": {
+        "line": 45,
+        "column": 86
+      }
+    },
+    "uid-36": {
+      "start": {
+        "line": 45,
         "column": 45
       },
       "end": {
-        "line": 44,
+        "line": 45,
         "column": 80
       }
     }

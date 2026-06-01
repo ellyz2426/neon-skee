@@ -36,9 +36,10 @@
   <span class="section-title">TRICK SHOTS</span>
   <span class="help-text">Land special throws for bonus XP and instant replays!</span>
   <span class="help-highlight">Nothing But Net | Spin Doctor | Hail Mary | Rail Rider + 6 more</span>
-  <span class="section-title">9 GAME MODES</span>
-  <span class="help-text">Classic | Speed | Target | Progressive | Daily | Tournament | Practice | Season | Custom</span>
+  <span class="section-title">10 GAME MODES</span>
+  <span class="help-text">Classic | Speed | Target | Progressive | Daily | Tournament | Practice | Season | Custom | Endless</span>
   <span class="help-text">Season: 8-stage campaign with star ratings</span>
+  <span class="help-text">Endless: Survive escalating waves! Moving targets + lane bumpers unlock as you progress</span>
   <span class="help-text">Custom: Set your own ball count, speed, wind, gravity, and more</span>
   <div class="btn-row">
     <div id="btn-tutorial-replay" class="tut-btn"><span class="tut-text">TUTORIAL</span></div>

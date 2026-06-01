@@ -32,7 +32,8 @@
   </div>
   <div class="mode-row">
     <div id="btn-custom" class="btn" style="background-color: rgba(255,136,0,0.15); border-color: #ff8800;"><span style="font-size: 1.4; color: #ff8800;">CUSTOM</span></div>
+    <div id="btn-endless" class="btn" style="background-color: rgba(255,0,68,0.15); border-color: #ff0044;"><span style="font-size: 1.4; color: #ff0044;">♾ ENDLESS</span></div>
   </div>
-  <span class="desc">Classic: 9 balls, best score. Speed: timed rush. Target: hit specific rings.</span>
+  <span class="desc">Classic: 9 balls. Endless: survive waves with escalating targets!</span>
   <div id="btn-back-mode" class="back-btn"><span class="back-text">BACK</span></div>
 </div>

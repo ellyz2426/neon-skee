@@ -15,8 +15,8 @@ import {
 // TYPES & CONSTANTS
 // ═══════════════════════════════════════════════════
 
-type GameState = 'title' | 'modeselect' | 'difficulty' | 'countdown' | 'aiming' | 'rolling' | 'scoring' | 'paused' | 'gameover' | 'leaderboard' | 'achievements' | 'settings' | 'help' | 'stats' | 'skins' | 'tutorial' | 'season' | 'seasonresult' | 'customsetup' | 'replay';
-type GameMode = 'classic' | 'speedround' | 'target' | 'progressive' | 'daily' | 'practice' | 'tournament' | 'season' | 'custom';
+type GameState = 'title' | 'modeselect' | 'difficulty' | 'countdown' | 'aiming' | 'rolling' | 'scoring' | 'paused' | 'gameover' | 'leaderboard' | 'achievements' | 'settings' | 'help' | 'stats' | 'skins' | 'tutorial' | 'season' | 'seasonresult' | 'customsetup' | 'replay' | 'waveintro';
+type GameMode = 'classic' | 'speedround' | 'target' | 'progressive' | 'daily' | 'practice' | 'tournament' | 'season' | 'custom' | 'endless';
 type Difficulty = 'easy' | 'medium' | 'hard';
 
 interface Ring {
@@ -237,6 +237,22 @@ const ACHIEVEMENTS: Achievement[] = [
   { id: 'total_500k', name: 'Half Million', desc: 'Accumulate 500,000 career points' },
   { id: 'games_200', name: 'Obsessed', desc: 'Play 200 games' },
   { id: 'perfect_hard_frame', name: 'Impossible Frame', desc: 'All 50+ hits on Hard difficulty' },
+  // Round 5 achievements
+  { id: 'endless_wave_3', name: 'Survivor', desc: 'Reach Wave 3 in Endless mode' },
+  { id: 'endless_wave_5', name: 'Endurance Runner', desc: 'Reach Wave 5 in Endless mode' },
+  { id: 'endless_wave_10', name: 'Unstoppable', desc: 'Reach Wave 10 in Endless mode' },
+  { id: 'endless_wave_15', name: 'Eternal Roller', desc: 'Reach Wave 15 in Endless mode' },
+  { id: 'moving_target_50', name: 'Moving Target', desc: 'Hit center 50 while targets are moving' },
+  { id: 'bumper_bounce', name: 'Bumper Bounce', desc: 'Score 40+ after hitting a lane bumper' },
+  { id: 'total_1m', name: 'Millionaire', desc: 'Accumulate 1,000,000 career points' },
+  { id: 'games_500', name: 'Addict', desc: 'Play 500 games' },
+  { id: 'all_modes', name: 'Well Rounded', desc: 'Play all 10 game modes' },
+  { id: 'score_7500', name: 'Transcendent', desc: 'Score 7500+ in one frame' },
+  { id: 'score_10000', name: 'Ascended', desc: 'Score 10000+ in one frame' },
+  { id: 'streak_15', name: 'Godlike', desc: '15 consecutive 50+ hits' },
+  { id: 'endless_no_miss_wave', name: 'Flawless Wave', desc: 'Complete an Endless wave with 100% accuracy' },
+  { id: 'pocket_streak_3', name: 'Pocket Sniper', desc: '3 pocket hits in one frame' },
+  { id: 'lucky_last', name: 'Lucky Last', desc: 'Score 100+ on the very last ball of a frame' },
 ];
 
 // ═══════════════════════════════════════════════════
@@ -525,6 +541,34 @@ class AudioManager {
     this.playTone(440 + level * 100, 'triangle', 0.2, 0.25);
   }
 
+  bumperHitSound() {
+    // Punchy metallic bounce
+    this.playTone(500, 'square', 0.08, 0.3);
+    this.playTone(700, 'triangle', 0.06, 0.2);
+    this.playNoise(0.05, 0.15, 4000);
+  }
+
+  waveStartSound() {
+    // Rising synth sweep for new wave
+    if (!this.ctx || !this.sfxGain) return;
+    const c = this.ctx;
+    const o = c.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(200, c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(1200, c.currentTime + 0.4);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.2, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.5);
+    const f = c.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.value = 2000;
+    o.connect(f);
+    f.connect(g);
+    g.connect(this.sfxGain);
+    o.start();
+    o.stop(c.currentTime + 0.5);
+  }
+
   slowMoSound() {
     // Deep whoosh for slow-mo
     if (!this.ctx || !this.sfxGain) return;
@@ -666,6 +710,19 @@ class GameStateManager {
   // Custom challenge state
   customConfig: CustomConfig = { ...CUSTOM_DEFAULTS };
 
+  // Endless survival state
+  endlessWave = 1;
+  endlessBestWave = 0;
+  endlessTargetScore = 150;
+  endlessMovingTargets = false; // Activates after wave 3
+  endlessBumpers = false; // Activates after wave 5
+
+  // Moving target state (ring oscillation)
+  ringOffsets: number[] = [0, 0, 0, 0, 0]; // X offset per ring
+  ringOscActive = false;
+  pocketOscActive = false;
+  pocketOffsets: number[] = [0, 0]; // Y offset per pocket
+
   // Season state
   seasonStageIndex = 0;
   seasonStars: number[] = []; // Stars per stage (0-3)
@@ -673,16 +730,17 @@ class GameStateManager {
   // Persistent data
   private _achievements: Set<string>;
   private _leaderboard: LeaderboardEntry[];
-  private _stats: { games: number; totalScore: number; bestScore: number; totalRolls: number; totalHits: number; bestCombo: number; skinsUsed: Set<string>; themesUsed: Set<string>; pocketHits: number; fiftyHits: number; dailyPlayed: number; xp: number; level: number; };
+  private _stats: { games: number; totalScore: number; bestScore: number; totalRolls: number; totalHits: number; bestCombo: number; skinsUsed: Set<string>; themesUsed: Set<string>; pocketHits: number; fiftyHits: number; dailyPlayed: number; xp: number; level: number; modesPlayed: Set<string>; };
   masterVol = 0.7; sfxVol = 0.8; musicVol = 0.15;
+  _bumperHitThisThrow = false;
 
   constructor() {
     this._achievements = new Set(JSON.parse(localStorage.getItem('skee_achievements') || '[]'));
     this._leaderboard = JSON.parse(localStorage.getItem('skee_leaderboard') || '[]');
     const savedStats = JSON.parse(localStorage.getItem('skee_stats') || 'null');
-    this._stats = savedStats ? { ...savedStats, skinsUsed: new Set(savedStats.skinsUsed || []), themesUsed: new Set(savedStats.themesUsed || []) } : {
+    this._stats = savedStats ? { ...savedStats, skinsUsed: new Set(savedStats.skinsUsed || []), themesUsed: new Set(savedStats.themesUsed || []), modesPlayed: new Set(savedStats.modesPlayed || []) } : {
       games: 0, totalScore: 0, bestScore: 0, totalRolls: 0, totalHits: 0, bestCombo: 0,
-      skinsUsed: new Set<string>(), themesUsed: new Set<string>(), pocketHits: 0, fiftyHits: 0, dailyPlayed: 0, xp: 0, level: 1,
+      skinsUsed: new Set<string>(), themesUsed: new Set<string>(), pocketHits: 0, fiftyHits: 0, dailyPlayed: 0, xp: 0, level: 1, modesPlayed: new Set<string>(),
     };
     this.themeIndex = parseInt(localStorage.getItem('skee_theme') || '0');
     this.skinIndex = parseInt(localStorage.getItem('skee_skin') || '0');
@@ -802,6 +860,7 @@ class GameStateManager {
     if (this.maxCombo > this._stats.bestCombo) this._stats.bestCombo = this.maxCombo;
     this._stats.skinsUsed.add(BALL_SKINS[this.skinIndex].name);
     this._stats.themesUsed.add(THEMES[this.themeIndex].name);
+    this._stats.modesPlayed.add(this.mode);
     this.saveStats();
     this.addLeaderboardEntry();
   }
@@ -824,7 +883,7 @@ class GameStateManager {
   }
 
   private saveStats() {
-    const s = { ...this._stats, skinsUsed: [...this._stats.skinsUsed], themesUsed: [...this._stats.themesUsed] };
+    const s = { ...this._stats, skinsUsed: [...this._stats.skinsUsed], themesUsed: [...this._stats.themesUsed], modesPlayed: [...this._stats.modesPlayed] };
     localStorage.setItem('skee_stats', JSON.stringify(s));
   }
 
@@ -884,6 +943,71 @@ class GameStateManager {
     return this.seasonStars[idx - 1] > 0;
   }
 
+  // Endless mode methods
+  getEndlessWaveTarget(wave: number): number {
+    // Escalating target: 150 base, +50 per wave, with exponential ramp after wave 5
+    if (wave <= 5) return 150 + (wave - 1) * 50;
+    return 400 + Math.floor((wave - 5) * 75 * Math.pow(1.08, wave - 5));
+  }
+
+  getEndlessBallCount(wave: number): number {
+    // Start with 9, add 1 every 3 waves, cap at 15
+    return Math.min(15, 9 + Math.floor((wave - 1) / 3));
+  }
+
+  advanceEndlessWave(): boolean {
+    // Returns true if player met the target
+    if (this.score >= this.endlessTargetScore) {
+      this.endlessWave++;
+      this.endlessTargetScore = this.getEndlessWaveTarget(this.endlessWave);
+      // Enable dynamic targets after wave 3
+      if (this.endlessWave >= 3) this.endlessMovingTargets = true;
+      // Enable lane bumpers after wave 5
+      if (this.endlessWave >= 5) this.endlessBumpers = true;
+      return true;
+    }
+    return false;
+  }
+
+  resetEndless() {
+    this.endlessWave = 1;
+    this.endlessTargetScore = this.getEndlessWaveTarget(1);
+    this.endlessMovingTargets = false;
+    this.endlessBumpers = false;
+    this.ringOscActive = false;
+    this.pocketOscActive = false;
+    this.ringOffsets = [0, 0, 0, 0, 0];
+    this.pocketOffsets = [0, 0];
+    // Restore best wave from localStorage
+    this.endlessBestWave = parseInt(localStorage.getItem('skee_endless_best') || '0');
+  }
+
+  saveEndlessBest() {
+    if (this.endlessWave - 1 > this.endlessBestWave) {
+      this.endlessBestWave = this.endlessWave - 1;
+      localStorage.setItem('skee_endless_best', String(this.endlessBestWave));
+    }
+  }
+
+  // Moving target update
+  updateMovingTargets(time: number) {
+    if (!this.ringOscActive && !this.endlessMovingTargets) return;
+    // Outer rings oscillate more than inner rings
+    const waveIntensity = this.mode === 'endless' ? Math.min(1, (this.endlessWave - 3) / 5) : 1;
+    for (let i = 0; i < 5; i++) {
+      const amplitude = (i + 1) * 0.015 * waveIntensity; // outer rings move more, scales with wave
+      const speed = 0.8 + i * 0.2;
+      const phase = i * 1.2;
+      this.ringOffsets[i] = Math.sin(time * speed + phase) * amplitude;
+    }
+    // Pockets oscillate vertically after wave 7
+    if (this.pocketOscActive || (this.endlessMovingTargets && this.endlessWave >= 7)) {
+      const pocketIntensity = this.mode === 'endless' ? Math.min(1, (this.endlessWave - 7) / 4) : 1;
+      this.pocketOffsets[0] = Math.sin(time * 0.6) * 0.03 * pocketIntensity;
+      this.pocketOffsets[1] = Math.sin(time * 0.6 + Math.PI) * 0.03 * pocketIntensity;
+    }
+  }
+
   calculateStars(stageIdx: number, score: number): number {
     const stage = SEASON_STAGES[stageIdx];
     if (!stage) return 0;
@@ -909,6 +1033,7 @@ class GameStateManager {
     this.peakHeight = 0;
     this.trickShotThisThrow = null;
     this.replayFrames = [];
+    this._bumperHitThisThrow = false;
   }
 
   recordReplayFrame(pos: Vector3) {
@@ -1045,6 +1170,22 @@ class GameStateManager {
       ['total_500k', this._stats.totalScore >= 500000],
       ['games_200', this._stats.games >= 200],
       ['perfect_hard_frame', this.difficulty === 'hard' && this.misses === 0 && this.hits >= BALLS_PER_FRAME && this.ballsRemaining === 0 && this.rollsThisFrame.every(r => r >= 50)],
+      // Round 5 achievements
+      ['endless_wave_3', this.mode === 'endless' && this.endlessWave >= 3],
+      ['endless_wave_5', this.mode === 'endless' && this.endlessWave >= 5],
+      ['endless_wave_10', this.mode === 'endless' && this.endlessWave >= 10],
+      ['endless_wave_15', this.mode === 'endless' && this.endlessWave >= 15],
+      ['moving_target_50', this.ringOscActive && this.ringsHitThisFrame.has(50)],
+      ['bumper_bounce', (this as any)._bumperHitThisThrow && this.lastScore >= 40],
+      ['total_1m', this._stats.totalScore >= 1000000],
+      ['games_500', this._stats.games >= 500],
+      ['all_modes', (this._stats as any).modesPlayed?.size >= 10],
+      ['score_7500', this.score >= 7500],
+      ['score_10000', this.score >= 10000],
+      ['streak_15', this.maxStreak >= 15],
+      ['endless_no_miss_wave', this.mode === 'endless' && this.misses === 0 && this.hits > 0 && this.ballsRemaining === 0],
+      ['pocket_streak_3', this.pocketsHitThisFrame.size >= 2 && this._stats.pocketHits >= 3],
+      ['lucky_last', this.ballsRemaining === 0 && this.lastScore >= 100],
     ];
     for (const [id, cond] of checks) {
       if (cond && this.unlock(id)) {
@@ -1174,6 +1315,7 @@ async function main() {
     laneGroup.add(board);
 
     // Scoring rings
+    ringMeshRefs.length = 0;
     RINGS.forEach((ring, i) => {
       const ringColors = [t.ring1, t.ring2, t.ring3, t.ring4, t.ring5];
       const ringGeo = new TorusGeometry((ring.innerR + ring.outerR) / 2, (ring.outerR - ring.innerR) / 2, 8, 32);
@@ -1191,6 +1333,8 @@ async function main() {
       glowRing.position.z += 0.01;
       glowRing.rotation.x = Math.PI / 2;
       laneGroup.add(glowRing);
+
+      ringMeshRefs.push({ mesh: ringMesh, glowMesh: glowRing, baseX: 0 });
     });
 
     // Center bullseye sphere
@@ -1199,7 +1343,8 @@ async function main() {
     laneGroup.add(bullseye);
 
     // Corner pockets
-    POCKET_POSITIONS.forEach(pp => {
+    pocketMeshRefs.length = 0;
+    POCKET_POSITIONS.forEach((pp, pi) => {
       const pocketGeo = new CylinderGeometry(POCKET_RADIUS, POCKET_RADIUS, 0.04, 16);
       const pocketMesh = new Mesh(pocketGeo, new MeshBasicMaterial({ color: new Color(t.pocket), transparent: true, opacity: 0.8 }));
       pocketMesh.position.set(pp.x, BOARD_Y + pp.y, BOARD_Z + 0.02);
@@ -1213,6 +1358,8 @@ async function main() {
       );
       pGlow.position.copy(pocketMesh.position);
       laneGroup.add(pGlow);
+
+      pocketMeshRefs.push({ mesh: pocketMesh, glowMesh: pGlow, baseY: BOARD_Y + pp.y });
     });
 
     // Score labels using small spheres as markers
@@ -1236,12 +1383,123 @@ async function main() {
     lineMesh.position.set(0, LANE_Y + 0.01, LANE_Z);
     laneGroup.add(lineMesh);
 
+    // Lane bumpers (visible when active in Endless mode or custom)
+    buildBumpers(t);
+
     // Spotlight on scoring board
     const boardLight = new SpotLight(new Color(t.glow) as any, 2, 5, Math.PI / 4, 0.5);
     boardLight.position.set(0, BOARD_Y + 1, BOARD_Z + 0.5);
     boardLight.target.position.set(0, BOARD_Y, BOARD_Z);
     laneGroup.add(boardLight);
     laneGroup.add(boardLight.target);
+  }
+
+  // ═══ LANE BUMPERS ═══
+  interface BumperDef {
+    x: number;
+    z: number;
+    radius: number;
+    mesh: Mesh | null;
+    glowMesh: Mesh | null;
+  }
+  const laneBumpers: BumperDef[] = [
+    { x: -0.12, z: LANE_Z + LANE_LENGTH / 2 - 0.7, radius: 0.04, mesh: null, glowMesh: null },
+    { x: 0.10, z: LANE_Z + LANE_LENGTH / 2 - 1.2, radius: 0.04, mesh: null, glowMesh: null },
+    { x: -0.08, z: LANE_Z + LANE_LENGTH / 2 - 1.6, radius: 0.035, mesh: null, glowMesh: null },
+  ];
+
+  function buildBumpers(t: Theme) {
+    laneBumpers.forEach(b => {
+      if (b.mesh) { laneGroup.remove(b.mesh); b.mesh = null; }
+      if (b.glowMesh) { laneGroup.remove(b.glowMesh); b.glowMesh = null; }
+      // Create bumper meshes (always created, visibility toggled)
+      const bGeo = new CylinderGeometry(b.radius, b.radius, 0.06, 12);
+      const bMat = new MeshStandardMaterial({ color: new Color(t.accent), emissive: new Color(t.accent), emissiveIntensity: 0.5, metalness: 0.7, roughness: 0.2 });
+      b.mesh = new Mesh(bGeo, bMat);
+      b.mesh.position.set(b.x, LANE_Y + 0.03, b.z);
+      b.mesh.visible = gsm.endlessBumpers;
+      laneGroup.add(b.mesh);
+      // Glow ring
+      const gGeo = new TorusGeometry(b.radius + 0.01, 0.005, 4, 16);
+      const gMat = new MeshBasicMaterial({ color: new Color(t.accent), transparent: true, opacity: 0.4, blending: AdditiveBlending });
+      b.glowMesh = new Mesh(gGeo, gMat);
+      b.glowMesh.position.copy(b.mesh.position);
+      b.glowMesh.position.y += 0.04;
+      b.glowMesh.rotation.x = Math.PI / 2;
+      b.glowMesh.visible = gsm.endlessBumpers;
+      laneGroup.add(b.glowMesh);
+    });
+  }
+
+  function updateBumperVisibility() {
+    laneBumpers.forEach(b => {
+      if (b.mesh) b.mesh.visible = gsm.endlessBumpers;
+      if (b.glowMesh) b.glowMesh.visible = gsm.endlessBumpers;
+    });
+  }
+
+  // Ring position update indices (stored after buildLane creates ring meshes)
+  let ringMeshIndices: number[] = [];
+  let pocketMeshIndices: number[] = [];
+  const ringMeshRefs: { mesh: Mesh; glowMesh: Mesh; baseX: number }[] = [];
+  const pocketMeshRefs: { mesh: Mesh; glowMesh: Mesh; baseY: number }[] = [];
+
+  function cacheRingIndices() {
+    // After buildLane, cache which children are the ring and pocket meshes
+    // Ring meshes are added after board, in RINGS order (pairs: mesh + glow)
+    ringMeshIndices = [];
+    pocketMeshIndices = [];
+    // We don't track indices — just update by scanning for torus geometry at known Z
+    // Better approach: store references during buildLane
+  }
+
+  function updateRingPositions() {
+    if (!gsm.ringOscActive && !gsm.endlessMovingTargets) return;
+    // Update ring mesh positions based on oscillation offsets
+    ringMeshRefs.forEach((ref, i) => {
+      const offset = gsm.ringOffsets[i] || 0;
+      ref.mesh.position.x = ref.baseX + offset;
+      ref.glowMesh.position.x = ref.baseX + offset;
+    });
+    // Update pocket positions
+    pocketMeshRefs.forEach((ref, i) => {
+      const offset = gsm.pocketOffsets[i] || 0;
+      ref.mesh.position.y = ref.baseY + offset;
+      ref.glowMesh.position.y = ref.baseY + offset;
+    });
+  }
+
+  function checkBumperCollision(pos: Vector3, vel: Vector3): boolean {
+    if (!gsm.endlessBumpers) return false;
+    for (const b of laneBumpers) {
+      const dx = pos.x - b.x;
+      const dz = pos.z - b.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist < b.radius + 0.035) {
+        // Bounce: reflect velocity away from bumper center
+        const nx = dx / dist;
+        const nz = dz / dist;
+        const dot = vel.x * nx + vel.z * nz;
+        vel.x -= 2 * dot * nx;
+        vel.z -= 2 * dot * nz;
+        vel.x *= 0.8; // Energy loss
+        vel.z *= 0.8;
+        // Push ball out of bumper
+        pos.x = b.x + (b.radius + 0.04) * nx;
+        pos.z = b.z + (b.radius + 0.04) * nz;
+        gsm._bumperHitThisThrow = true;
+        // Flash bumper and play sound
+        audio.bumperHitSound();
+        if (b.glowMesh) {
+          (b.glowMesh.material as MeshBasicMaterial).opacity = 1.0;
+          setTimeout(() => {
+            if (b.glowMesh) (b.glowMesh.material as MeshBasicMaterial).opacity = 0.4;
+          }, 200);
+        }
+        return true;
+      }
+    }
+    return false;
   }
 
   // ═══ BALL ═══
@@ -1320,6 +1578,9 @@ async function main() {
         // Rolling friction
         ballVelocity.x *= (1 - 1.5 * subDt);
         ballVelocity.z *= (1 - 0.8 * subDt);
+
+        // Check bumper collisions
+        checkBumperCollision(pos, ballVelocity);
 
         // Ball rotation proportional to velocity
         ball.rotation.x -= ballVelocity.z * subDt * 10;
@@ -1438,20 +1699,24 @@ async function main() {
   }
 
   function scoreBall(hitX: number, hitY: number) {
-    // Check corner pockets first
+    // Check corner pockets first (with oscillation offsets)
     for (let i = 0; i < POCKET_POSITIONS.length; i++) {
       const pp = POCKET_POSITIONS[i];
+      const pocketY = pp.y + gsm.pocketOffsets[i];
       const dx = hitX - pp.x;
-      const dy = hitY - pp.y;
+      const dy = hitY - pocketY;
       if (Math.sqrt(dx * dx + dy * dy) <= POCKET_RADIUS + 0.02) {
         landBall(POCKET_POINTS, true);
         return;
       }
     }
 
-    // Check rings (inner to outer)
-    const dist = Math.sqrt(hitX * hitX + hitY * hitY);
-    for (const ring of RINGS) {
+    // Check rings (inner to outer, with oscillation offsets)
+    for (let ri = 0; ri < RINGS.length; ri++) {
+      const ring = RINGS[ri];
+      const offsetX = gsm.ringOffsets[ri] || 0;
+      const adjX = hitX - offsetX;
+      const dist = Math.sqrt(adjX * adjX + hitY * hitY);
       if (dist <= ring.outerR) {
         landBall(ring.points);
         return;
@@ -1459,6 +1724,7 @@ async function main() {
     }
 
     // Missed all rings (hit board but outside scoring area)
+    const dist = Math.sqrt(hitX * hitX + hitY * hitY);
     if (dist <= BOARD_RADIUS) {
       landBall(10); // outer board area still scores 10
     } else {
@@ -1610,6 +1876,46 @@ async function main() {
         gameState = 'aiming';
         showToast('Round ' + (gsm.tournamentRound + 1));
         return;
+      }
+    }
+    if (gsm.mode === 'endless') {
+      // Check if player met the wave target
+      if (gsm.advanceEndlessWave()) {
+        // Success! Show wave intro and continue
+        gsm.checkAchievements((a) => {
+          audio.achievementSound();
+          showToast('Achievement: ' + a.name);
+        });
+        audio.seasonComplete();
+        audio.waveStartSound();
+        // Award XP for clearing the wave
+        const waveXp = Math.floor(gsm.score / 5 + gsm.endlessWave * 10);
+        gsm.awardXp(waveXp);
+        showToast(`Wave ${gsm.endlessWave - 1} cleared! +${waveXp} XP`);
+        // Reset for next wave
+        gsm.resetFrame();
+        gsm.ballsRemaining = gsm.getEndlessBallCount(gsm.endlessWave);
+        gsm.frameNumber = gsm.endlessWave;
+        updateBumperVisibility();
+        // Brief wave intro
+        gameState = 'waveintro';
+        showUI('');
+        showHUD(true);
+        updateHUD();
+        setText(panelEntities['toast'], 'toast-text', '');
+        setTimeout(() => {
+          showToast(`⚡ Wave ${gsm.endlessWave} — Target: ${gsm.endlessTargetScore}`);
+          setTimeout(() => {
+            createBall();
+            gameState = 'aiming';
+            maybeSpawnPowerUp();
+          }, 1500);
+        }, 500);
+        return;
+      } else {
+        // Failed to meet target — game over
+        gsm.saveEndlessBest();
+        showToast(`Wave ${gsm.endlessWave} failed! Best: Wave ${gsm.endlessBestWave}`);
       }
     }
     gsm.endGame();
@@ -2274,6 +2580,8 @@ async function main() {
     }
     if (gsm.mode === 'target' && gsm.targetRing > 0) {
       setText(e, 'target-value', `Target: ${gsm.targetRing}pts`);
+    } else if (gsm.mode === 'endless') {
+      setText(e, 'target-value', `Wave ${gsm.endlessWave} | ⚡${gsm.endlessTargetScore}`);
     } else {
       setText(e, 'target-value', '');
     }
@@ -2307,6 +2615,8 @@ async function main() {
       const playerTotal = gsm.tournamentScores.reduce((a, b) => a + b, 0);
       const aiTotal = gsm.tournamentAIScores.reduce((a, b) => a + b, 0);
       setText(e, 'tournament-result', playerTotal > aiTotal ? 'YOU WIN!' : playerTotal === aiTotal ? 'DRAW!' : 'CPU WINS');
+    } else if (gsm.mode === 'endless') {
+      setText(e, 'tournament-result', `Endless: Wave ${gsm.endlessWave} | Best: ${gsm.endlessBestWave}`);
     } else {
       setText(e, 'tournament-result', '');
     }
@@ -2356,6 +2666,10 @@ async function main() {
     setText(e, 'stat-fifties', String(s.fiftyHits));
     setText(e, 'stat-level', `Level ${gsm.level}`);
     setText(e, 'stat-xp', `${gsm.xp} / ${gsm.xpForNext} XP`);
+    // Endless best
+    const endlessBest = parseInt(localStorage.getItem('skee_endless_best') || '0');
+    setText(e, 'stat-endless', endlessBest > 0 ? `Best Wave: ${endlessBest}` : '—');
+    setText(e, 'stat-modes', `${s.modesPlayed?.size || 0} / 10`);
   }
 
   function updatePowerUpHUD() {
@@ -2509,6 +2823,7 @@ async function main() {
       bindBtn('modeselect', 'btn-tournament', () => { audio.buttonClick(); gsm.mode = 'tournament'; gameState = 'difficulty'; showUI('difficulty'); });
       bindBtn('modeselect', 'btn-season', () => { audio.buttonClick(); gameState = 'season'; showUI('season'); updateSeasonPanel(); });
       bindBtn('modeselect', 'btn-custom', () => { audio.buttonClick(); gsm.customConfig = { ...CUSTOM_DEFAULTS }; gameState = 'customsetup'; showUI('customsetup'); updateCustomSetupPanel(); });
+      bindBtn('modeselect', 'btn-endless', () => { audio.buttonClick(); gsm.mode = 'endless'; gameState = 'difficulty'; showUI('difficulty'); });
       bindBtn('modeselect', 'btn-back-mode', () => { audio.buttonClick(); gameState = 'title'; showUI('title'); });
 
       // Season panel
@@ -2656,7 +2971,18 @@ async function main() {
       gsm.ballsRemaining = stage.balls;
     } else if (gsm.mode === 'custom') {
       gsm.ballsRemaining = gsm.customConfig.balls;
+    } else if (gsm.mode === 'endless') {
+      gsm.resetEndless();
+      gsm.ballsRemaining = gsm.getEndlessBallCount(1);
     }
+
+    // Reset dynamic target and bumper state
+    gsm.ringOscActive = false;
+    gsm.endlessMovingTargets = false;
+    gsm.endlessBumpers = false;
+    gsm.ringOffsets = [0, 0, 0, 0, 0];
+    gsm.pocketOffsets = [0, 0];
+    updateBumperVisibility();
 
     // Clear power-up state
     gsm.activePowerUp = null;
@@ -2915,6 +3241,10 @@ async function main() {
     updateExtraBalls(dt);
     updatePowerUpOrb(dt, totalTime);
     updateReplay(dt);
+
+    // Update moving targets
+    gsm.updateMovingTargets(totalTime);
+    updateRingPositions();
 
     // Auto-replay after trick shots (with delay)
     if (gsm.autoReplayPending && !ballActive && !gsm.replayPlaying) {

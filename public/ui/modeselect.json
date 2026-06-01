@@ -262,6 +262,35 @@
               }
             },
             "dataUid": "uid-24"
+          },
+          {
+            "type": "container",
+            "sourceTag": "div",
+            "children": [
+              {
+                "sourceTag": "span",
+                "type": "custom",
+                "children": [
+                  "♾ ENDLESS"
+                ],
+                "properties": {
+                  "style": {
+                    "fontSize": "1.4",
+                    "color": "#ff0044"
+                  }
+                },
+                "dataUid": "uid-27"
+              }
+            ],
+            "properties": {
+              "id": "btn-endless",
+              "class": "btn",
+              "style": {
+                "backgroundColor": "rgba(255,0,68,0.15)",
+                "borderColor": "#ff0044"
+              }
+            },
+            "dataUid": "uid-26"
           }
         ],
         "properties": {
@@ -273,12 +302,12 @@
         "sourceTag": "span",
         "type": "custom",
         "children": [
-          "Classic: 9 balls, best score. Speed: timed rush. Target: hit specific rings."
+          "Classic: 9 balls. Endless: survive waves with escalating targets!"
         ],
         "properties": {
           "class": "desc"
         },
-        "dataUid": "uid-26"
+        "dataUid": "uid-28"
       },
       {
         "type": "container",
@@ -293,14 +322,14 @@
             "properties": {
               "class": "back-text"
             },
-            "dataUid": "uid-28"
+            "dataUid": "uid-30"
           }
         ],
         "properties": {
           "id": "btn-back-mode",
           "class": "back-btn"
         },
-        "dataUid": "uid-27"
+        "dataUid": "uid-29"
       }
     ],
     "properties": {
@@ -536,7 +565,7 @@
         "column": 0
       },
       "end": {
-        "line": 37,
+        "line": 38,
         "column": 6
       }
     },
@@ -756,7 +785,7 @@
         "column": 2
       },
       "end": {
-        "line": 34,
+        "line": 35,
         "column": 8
       }
     },
@@ -782,31 +811,51 @@
     },
     "uid-26": {
       "start": {
-        "line": 35,
-        "column": 2
+        "line": 34,
+        "column": 4
       },
       "end": {
-        "line": 35,
-        "column": 104
+        "line": 34,
+        "column": 176
       }
     },
     "uid-27": {
       "start": {
-        "line": 36,
-        "column": 2
+        "line": 34,
+        "column": 108
       },
       "end": {
-        "line": 36,
-        "column": 84
+        "line": 34,
+        "column": 170
       }
     },
     "uid-28": {
       "start": {
         "line": 36,
-        "column": 43
+        "column": 2
       },
       "end": {
         "line": 36,
+        "column": 93
+      }
+    },
+    "uid-29": {
+      "start": {
+        "line": 37,
+        "column": 2
+      },
+      "end": {
+        "line": 37,
+        "column": 84
+      }
+    },
+    "uid-30": {
+      "start": {
+        "line": 37,
+        "column": 43
+      },
+      "end": {
+        "line": 37,
         "column": 78
       }
     }
