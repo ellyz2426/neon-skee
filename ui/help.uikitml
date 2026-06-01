@@ -1,0 +1,35 @@
+<style>
+  .help-panel { display: flex; flex-direction: column; padding-top: 2; padding-bottom: 2; padding-left: 3; padding-right: 3; background-color: rgba(0,0,0,0.9); border-color: #00ffff; border-width: 0.15; border-radius: 1.5; gap: 1; }
+  .help-title { font-size: 3; color: #00ffff; font-weight: bold; }
+  .section-title { font-size: 1.6; color: #ff00ff; font-weight: bold; }
+  .help-text { font-size: 1.1; color: #cccccc; }
+  .help-highlight { font-size: 1.1; color: #00ffff; }
+  .back-btn { padding-top: 0.5; padding-bottom: 0.5; padding-left: 1.5; padding-right: 1.5; background-color: rgba(255,255,255,0.05); border-color: #666666; border-width: 0.05; border-radius: 0.4; cursor: pointer; align-self: center; }
+  .back-text { font-size: 1.2; color: #888888; }
+</style>
+<div class="help-panel">
+  <span class="help-title">HOW TO PLAY</span>
+  <span class="section-title">BROWSER CONTROLS</span>
+  <span class="help-text">Click + Hold: Charge throw power</span>
+  <span class="help-text">Move Mouse: Aim left/right</span>
+  <span class="help-text">Release: Roll the ball</span>
+  <span class="help-text">ESC: Pause | R: Rematch</span>
+  <span class="section-title">VR CONTROLS</span>
+  <span class="help-text">Right Trigger: Hold to charge, release to roll</span>
+  <span class="help-text">Right Thumbstick: Aim left/right</span>
+  <span class="help-text">B Button: Pause</span>
+  <span class="section-title">SCORING</span>
+  <span class="help-highlight">Center Ring: 50 pts</span>
+  <span class="help-text">Rings: 40 / 30 / 20 / 10 pts (inner to outer)</span>
+  <span class="help-highlight">Corner Pockets: 100 pts each!</span>
+  <span class="help-text">Combo multiplier builds with consecutive hits</span>
+  <span class="section-title">GAME MODES</span>
+  <span class="help-text">Classic: 9 balls, aim for high score</span>
+  <span class="help-text">Speed Round: Timed rush, unlimited balls</span>
+  <span class="help-text">Target: Hit specific ring values for bonus</span>
+  <span class="help-text">Progressive: Escalating difficulty per frame</span>
+  <span class="help-text">Daily: Seeded daily challenge with modifiers</span>
+  <span class="help-text">Tournament: 4-round bracket vs AI</span>
+  <span class="help-text">Practice: Unlimited balls, no pressure</span>
+  <div id="btn-back-help" class="back-btn"><span class="back-text">BACK</span></div>
+</div>

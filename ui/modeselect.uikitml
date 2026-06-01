@@ -1,0 +1,34 @@
+<style>
+  .mode-panel { display: flex; flex-direction: column; padding-top: 3; padding-bottom: 3; padding-left: 4; padding-right: 4; background-color: rgba(0,0,0,0.9); border-color: #00ffff; border-width: 0.15; border-radius: 1.5; align-items: center; gap: 1; }
+  .mode-title { font-size: 3; color: #00ffff; font-weight: bold; }
+  .mode-row { display: flex; flex-direction: row; gap: 1; justify-content: center; }
+  .btn { padding-top: 0.8; padding-bottom: 0.8; padding-left: 1.8; padding-right: 1.8; background-color: rgba(0,255,255,0.1); border-color: #00ffff; border-width: 0.08; border-radius: 0.5; cursor: pointer; }
+  .btn-text { font-size: 1.4; color: #00ffff; }
+  .btn-accent { background-color: rgba(255,0,255,0.1); border-color: #ff00ff; }
+  .btn-accent-text { font-size: 1.4; color: #ff00ff; }
+  .btn-gold { background-color: rgba(255,170,0,0.1); border-color: #ffaa00; }
+  .btn-gold-text { font-size: 1.4; color: #ffaa00; }
+  .desc { font-size: 1; color: #888888; }
+  .back-btn { padding-top: 0.5; padding-bottom: 0.5; padding-left: 1.5; padding-right: 1.5; background-color: rgba(255,255,255,0.05); border-color: #666666; border-width: 0.05; border-radius: 0.4; cursor: pointer; }
+  .back-text { font-size: 1.2; color: #888888; }
+</style>
+<div class="mode-panel">
+  <span class="mode-title">SELECT MODE</span>
+  <div class="mode-row">
+    <div id="btn-classic" class="btn"><span class="btn-text">CLASSIC</span></div>
+    <div id="btn-speed" class="btn"><span class="btn-text">SPEED ROUND</span></div>
+  </div>
+  <div class="mode-row">
+    <div id="btn-target" class="btn-accent btn"><span class="btn-accent-text">TARGET</span></div>
+    <div id="btn-progressive" class="btn-accent btn"><span class="btn-accent-text">PROGRESSIVE</span></div>
+  </div>
+  <div class="mode-row">
+    <div id="btn-daily" class="btn-gold btn"><span class="btn-gold-text">DAILY</span></div>
+    <div id="btn-tournament" class="btn-gold btn"><span class="btn-gold-text">TOURNAMENT</span></div>
+  </div>
+  <div class="mode-row">
+    <div id="btn-practice" class="btn"><span class="btn-text">PRACTICE</span></div>
+  </div>
+  <span class="desc">Classic: 9 balls, best score. Speed: timed rush. Target: hit specific rings.</span>
+  <div id="btn-back-mode" class="back-btn"><span class="back-text">BACK</span></div>
+</div>

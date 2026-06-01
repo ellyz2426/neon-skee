@@ -1,0 +1,33 @@
+<style>
+  .lb-panel { display: flex; flex-direction: column; padding-top: 2; padding-bottom: 2; padding-left: 3; padding-right: 3; background-color: rgba(0,0,0,0.9); border-color: #00ffff; border-width: 0.15; border-radius: 1.5; align-items: center; gap: 0.8; }
+  .lb-title { font-size: 3; color: #00ffff; font-weight: bold; }
+  .lb-header { display: flex; flex-direction: row; gap: 2; }
+  .lb-h { font-size: 1; color: #888888; }
+  .lb-row { display: flex; flex-direction: row; gap: 2; align-items: center; }
+  .lb-rank { font-size: 1.2; color: #ffaa00; width: 3; }
+  .lb-score { font-size: 1.2; color: #00ffff; font-weight: bold; width: 6; }
+  .lb-mode { font-size: 1; color: #ff00ff; width: 8; }
+  .lb-date { font-size: 1; color: #666666; width: 8; }
+  .back-btn { padding-top: 0.5; padding-bottom: 0.5; padding-left: 1.5; padding-right: 1.5; background-color: rgba(255,255,255,0.05); border-color: #666666; border-width: 0.05; border-radius: 0.4; cursor: pointer; }
+  .back-text { font-size: 1.2; color: #888888; }
+</style>
+<div class="lb-panel">
+  <span class="lb-title">LEADERBOARD</span>
+  <div class="lb-header">
+    <span class="lb-h">RANK</span>
+    <span class="lb-h">SCORE</span>
+    <span class="lb-h">MODE</span>
+    <span class="lb-h">DATE</span>
+  </div>
+  <div class="lb-row"><span id="lb-rank-0" class="lb-rank"></span><span id="lb-score-0" class="lb-score"></span><span id="lb-mode-0" class="lb-mode"></span><span id="lb-date-0" class="lb-date"></span></div>
+  <div class="lb-row"><span id="lb-rank-1" class="lb-rank"></span><span id="lb-score-1" class="lb-score"></span><span id="lb-mode-1" class="lb-mode"></span><span id="lb-date-1" class="lb-date"></span></div>
+  <div class="lb-row"><span id="lb-rank-2" class="lb-rank"></span><span id="lb-score-2" class="lb-score"></span><span id="lb-mode-2" class="lb-mode"></span><span id="lb-date-2" class="lb-date"></span></div>
+  <div class="lb-row"><span id="lb-rank-3" class="lb-rank"></span><span id="lb-score-3" class="lb-score"></span><span id="lb-mode-3" class="lb-mode"></span><span id="lb-date-3" class="lb-date"></span></div>
+  <div class="lb-row"><span id="lb-rank-4" class="lb-rank"></span><span id="lb-score-4" class="lb-score"></span><span id="lb-mode-4" class="lb-mode"></span><span id="lb-date-4" class="lb-date"></span></div>
+  <div class="lb-row"><span id="lb-rank-5" class="lb-rank"></span><span id="lb-score-5" class="lb-score"></span><span id="lb-mode-5" class="lb-mode"></span><span id="lb-date-5" class="lb-date"></span></div>
+  <div class="lb-row"><span id="lb-rank-6" class="lb-rank"></span><span id="lb-score-6" class="lb-score"></span><span id="lb-mode-6" class="lb-mode"></span><span id="lb-date-6" class="lb-date"></span></div>
+  <div class="lb-row"><span id="lb-rank-7" class="lb-rank"></span><span id="lb-score-7" class="lb-score"></span><span id="lb-mode-7" class="lb-mode"></span><span id="lb-date-7" class="lb-date"></span></div>
+  <div class="lb-row"><span id="lb-rank-8" class="lb-rank"></span><span id="lb-score-8" class="lb-score"></span><span id="lb-mode-8" class="lb-mode"></span><span id="lb-date-8" class="lb-date"></span></div>
+  <div class="lb-row"><span id="lb-rank-9" class="lb-rank"></span><span id="lb-score-9" class="lb-score"></span><span id="lb-mode-9" class="lb-mode"></span><span id="lb-date-9" class="lb-date"></span></div>
+  <div id="btn-back-lb" class="back-btn"><span class="back-text">BACK</span></div>
+</div>

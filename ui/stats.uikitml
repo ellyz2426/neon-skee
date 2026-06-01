@@ -1,0 +1,22 @@
+<style>
+  .stats-panel { display: flex; flex-direction: column; padding-top: 2; padding-bottom: 2; padding-left: 3; padding-right: 3; background-color: rgba(0,0,0,0.9); border-color: #00ffff; border-width: 0.15; border-radius: 1.5; align-items: center; gap: 0.8; }
+  .stats-title { font-size: 3; color: #00ffff; font-weight: bold; }
+  .stat-row { display: flex; flex-direction: row; gap: 1; align-items: center; }
+  .stat-label { font-size: 1.3; color: #888888; width: 14; }
+  .stat-value { font-size: 1.3; color: #00ffff; font-weight: bold; }
+  .back-btn { padding-top: 0.5; padding-bottom: 0.5; padding-left: 1.5; padding-right: 1.5; background-color: rgba(255,255,255,0.05); border-color: #666666; border-width: 0.05; border-radius: 0.4; cursor: pointer; }
+  .back-text { font-size: 1.2; color: #888888; }
+</style>
+<div class="stats-panel">
+  <span class="stats-title">CAREER STATS</span>
+  <div class="stat-row"><span class="stat-label">Games Played</span><span id="stat-games" class="stat-value">0</span></div>
+  <div class="stat-row"><span class="stat-label">Total Score</span><span id="stat-total" class="stat-value">0</span></div>
+  <div class="stat-row"><span class="stat-label">Best Score</span><span id="stat-best" class="stat-value">0</span></div>
+  <div class="stat-row"><span class="stat-label">Total Rolls</span><span id="stat-rolls" class="stat-value">0</span></div>
+  <div class="stat-row"><span class="stat-label">Total Hits</span><span id="stat-hits" class="stat-value">0</span></div>
+  <div class="stat-row"><span class="stat-label">Hit Rate</span><span id="stat-accuracy" class="stat-value">-</span></div>
+  <div class="stat-row"><span class="stat-label">Best Combo</span><span id="stat-combo" class="stat-value">0</span></div>
+  <div class="stat-row"><span class="stat-label">Pocket Hits</span><span id="stat-pockets" class="stat-value">0</span></div>
+  <div class="stat-row"><span class="stat-label">50-Point Hits</span><span id="stat-fifties" class="stat-value">0</span></div>
+  <div id="btn-back-stats" class="back-btn"><span class="back-text">BACK</span></div>
+</div>

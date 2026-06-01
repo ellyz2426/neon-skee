@@ -1,0 +1,28 @@
+<style>
+  .hud-panel { display: flex; flex-direction: row; padding-top: 0.8; padding-bottom: 0.8; padding-left: 1.5; padding-right: 1.5; background-color: rgba(0,0,0,0.7); border-color: #00ffff; border-width: 0.08; border-radius: 0.8; gap: 2; align-items: center; }
+  .hud-item { display: flex; flex-direction: column; align-items: center; }
+  .hud-label { font-size: 0.8; color: #888888; }
+  .hud-value { font-size: 2; color: #00ffff; font-weight: bold; }
+  .hud-combo { font-size: 1.4; color: #ff00ff; font-weight: bold; }
+  .hud-time { font-size: 1.4; color: #ffaa00; }
+  .hud-target { font-size: 1.2; color: #00ff88; }
+</style>
+<div class="hud-panel">
+  <div class="hud-item">
+    <span class="hud-label">SCORE</span>
+    <span id="score-value" class="hud-value">0</span>
+  </div>
+  <div class="hud-item">
+    <span class="hud-label">BALLS</span>
+    <span id="balls-value" class="hud-value">9</span>
+  </div>
+  <div class="hud-item">
+    <span id="combo-value" class="hud-combo"></span>
+  </div>
+  <div class="hud-item">
+    <span id="time-value" class="hud-time"></span>
+  </div>
+  <div class="hud-item">
+    <span id="target-value" class="hud-target"></span>
+  </div>
+</div>

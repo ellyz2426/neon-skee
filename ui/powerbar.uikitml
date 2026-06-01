@@ -1,0 +1,9 @@
+<style>
+  .power-panel { display: flex; flex-direction: column; padding-top: 0.5; padding-bottom: 0.5; padding-left: 0.5; padding-right: 0.5; background-color: rgba(0,0,0,0.6); border-color: #00ff88; border-width: 0.06; border-radius: 0.4; align-items: center; }
+  .power-label { font-size: 1; color: #00ff88; }
+  .power-fill { font-size: 0.8; color: #00ff88; font-weight: bold; }
+</style>
+<div class="power-panel">
+  <span id="power-label" class="power-label">AIM</span>
+  <span id="power-fill" class="power-fill">..........</span>
+</div>

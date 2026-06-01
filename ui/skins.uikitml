@@ -1,0 +1,21 @@
+<style>
+  .skins-panel { display: flex; flex-direction: column; padding-top: 2; padding-bottom: 2; padding-left: 3; padding-right: 3; background-color: rgba(0,0,0,0.9); border-color: #ff00ff; border-width: 0.15; border-radius: 1.5; align-items: center; gap: 0.6; }
+  .skins-title { font-size: 3; color: #ff00ff; font-weight: bold; }
+  .skin-row { display: flex; flex-direction: row; gap: 1; align-items: center; }
+  .skin-btn { padding-top: 0.5; padding-bottom: 0.5; padding-left: 1.5; padding-right: 1.5; background-color: rgba(255,0,255,0.08); border-color: #ff00ff; border-width: 0.05; border-radius: 0.4; cursor: pointer; }
+  .skin-name { font-size: 1.2; color: #ff00ff; }
+  .back-btn { padding-top: 0.5; padding-bottom: 0.5; padding-left: 1.5; padding-right: 1.5; background-color: rgba(255,255,255,0.05); border-color: #666666; border-width: 0.05; border-radius: 0.4; cursor: pointer; }
+  .back-text { font-size: 1.2; color: #888888; }
+</style>
+<div class="skins-panel">
+  <span class="skins-title">BALL SKINS</span>
+  <div class="skin-row"><div id="btn-skin-0" class="skin-btn"><span id="skin-name-0" class="skin-name">Neon Cyan</span></div></div>
+  <div class="skin-row"><div id="btn-skin-1" class="skin-btn"><span id="skin-name-1" class="skin-name">Solar Flare</span></div></div>
+  <div class="skin-row"><div id="btn-skin-2" class="skin-btn"><span id="skin-name-2" class="skin-name">Plasma Pink</span></div></div>
+  <div class="skin-row"><div id="btn-skin-3" class="skin-btn"><span id="skin-name-3" class="skin-name">Ice Crystal</span></div></div>
+  <div class="skin-row"><div id="btn-skin-4" class="skin-btn"><span id="skin-name-4" class="skin-name">Toxic Green</span></div></div>
+  <div class="skin-row"><div id="btn-skin-5" class="skin-btn"><span id="skin-name-5" class="skin-name">Void Purple</span></div></div>
+  <div class="skin-row"><div id="btn-skin-6" class="skin-btn"><span id="skin-name-6" class="skin-name">Chrome Silver</span></div></div>
+  <div class="skin-row"><div id="btn-skin-7" class="skin-btn"><span id="skin-name-7" class="skin-name">Inferno Red</span></div></div>
+  <div id="btn-back-skins" class="back-btn"><span class="back-text">BACK</span></div>
+</div>
