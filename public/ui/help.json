@@ -216,7 +216,7 @@
         "sourceTag": "span",
         "type": "custom",
         "children": [
-          "7 GAME MODES"
+          "POWER-UPS"
         ],
         "properties": {
           "class": "section-title"
@@ -227,12 +227,100 @@
         "sourceTag": "span",
         "type": "custom",
         "children": [
-          "Classic | Speed | Target | Progressive | Daily | Tournament | Practice"
+          "Glowing orbs appear on the lane — roll through them!"
         ],
         "properties": {
           "class": "help-text"
         },
         "dataUid": "uid-22"
+      },
+      {
+        "sourceTag": "span",
+        "type": "custom",
+        "children": [
+          "Multi-Ball | Magnet | Big Ball | Score ×2 | Ghost"
+        ],
+        "properties": {
+          "class": "help-highlight"
+        },
+        "dataUid": "uid-23"
+      },
+      {
+        "sourceTag": "span",
+        "type": "custom",
+        "children": [
+          "TRICK SHOTS"
+        ],
+        "properties": {
+          "class": "section-title"
+        },
+        "dataUid": "uid-24"
+      },
+      {
+        "sourceTag": "span",
+        "type": "custom",
+        "children": [
+          "Land special throws for bonus XP and instant replays!"
+        ],
+        "properties": {
+          "class": "help-text"
+        },
+        "dataUid": "uid-25"
+      },
+      {
+        "sourceTag": "span",
+        "type": "custom",
+        "children": [
+          "Nothing But Net | Spin Doctor | Hail Mary | Rail Rider + 6 more"
+        ],
+        "properties": {
+          "class": "help-highlight"
+        },
+        "dataUid": "uid-26"
+      },
+      {
+        "sourceTag": "span",
+        "type": "custom",
+        "children": [
+          "9 GAME MODES"
+        ],
+        "properties": {
+          "class": "section-title"
+        },
+        "dataUid": "uid-27"
+      },
+      {
+        "sourceTag": "span",
+        "type": "custom",
+        "children": [
+          "Classic | Speed | Target | Progressive | Daily | Tournament | Practice | Season | Custom"
+        ],
+        "properties": {
+          "class": "help-text"
+        },
+        "dataUid": "uid-28"
+      },
+      {
+        "sourceTag": "span",
+        "type": "custom",
+        "children": [
+          "Season: 8-stage campaign with star ratings"
+        ],
+        "properties": {
+          "class": "help-text"
+        },
+        "dataUid": "uid-29"
+      },
+      {
+        "sourceTag": "span",
+        "type": "custom",
+        "children": [
+          "Custom: Set your own ball count, speed, wind, gravity, and more"
+        ],
+        "properties": {
+          "class": "help-text"
+        },
+        "dataUid": "uid-30"
       },
       {
         "type": "container",
@@ -251,14 +339,14 @@
                 "properties": {
                   "class": "tut-text"
                 },
-                "dataUid": "uid-25"
+                "dataUid": "uid-33"
               }
             ],
             "properties": {
               "id": "btn-tutorial-replay",
               "class": "tut-btn"
             },
-            "dataUid": "uid-24"
+            "dataUid": "uid-32"
           },
           {
             "type": "container",
@@ -273,20 +361,20 @@
                 "properties": {
                   "class": "back-text"
                 },
-                "dataUid": "uid-27"
+                "dataUid": "uid-35"
               }
             ],
             "properties": {
               "id": "btn-back-help",
               "class": "back-btn"
             },
-            "dataUid": "uid-26"
+            "dataUid": "uid-34"
           }
         ],
         "properties": {
           "class": "btn-row"
         },
-        "dataUid": "uid-23"
+        "dataUid": "uid-31"
       }
     ],
     "properties": {
@@ -490,7 +578,7 @@
         "column": 0
       },
       "end": {
-        "line": 38,
+        "line": 46,
         "column": 6
       }
     },
@@ -691,7 +779,7 @@
       },
       "end": {
         "line": 32,
-        "column": 49
+        "column": 46
       }
     },
     "uid-22": {
@@ -701,7 +789,7 @@
       },
       "end": {
         "line": 33,
-        "column": 103
+        "column": 85
       }
     },
     "uid-23": {
@@ -710,47 +798,127 @@
         "column": 2
       },
       "end": {
-        "line": 37,
-        "column": 8
+        "line": 34,
+        "column": 87
       }
     },
     "uid-24": {
       "start": {
         "line": 35,
-        "column": 4
+        "column": 2
       },
       "end": {
         "line": 35,
-        "column": 94
+        "column": 48
       }
     },
     "uid-25": {
       "start": {
-        "line": 35,
-        "column": 50
-      },
-      "end": {
-        "line": 35,
-        "column": 88
-      }
-    },
-    "uid-26": {
-      "start": {
         "line": 36,
-        "column": 4
+        "column": 2
       },
       "end": {
         "line": 36,
         "column": 86
       }
     },
+    "uid-26": {
+      "start": {
+        "line": 37,
+        "column": 2
+      },
+      "end": {
+        "line": 37,
+        "column": 101
+      }
+    },
     "uid-27": {
       "start": {
-        "line": 36,
+        "line": 38,
+        "column": 2
+      },
+      "end": {
+        "line": 38,
+        "column": 49
+      }
+    },
+    "uid-28": {
+      "start": {
+        "line": 39,
+        "column": 2
+      },
+      "end": {
+        "line": 39,
+        "column": 121
+      }
+    },
+    "uid-29": {
+      "start": {
+        "line": 40,
+        "column": 2
+      },
+      "end": {
+        "line": 40,
+        "column": 75
+      }
+    },
+    "uid-30": {
+      "start": {
+        "line": 41,
+        "column": 2
+      },
+      "end": {
+        "line": 41,
+        "column": 96
+      }
+    },
+    "uid-31": {
+      "start": {
+        "line": 42,
+        "column": 2
+      },
+      "end": {
+        "line": 45,
+        "column": 8
+      }
+    },
+    "uid-32": {
+      "start": {
+        "line": 43,
+        "column": 4
+      },
+      "end": {
+        "line": 43,
+        "column": 94
+      }
+    },
+    "uid-33": {
+      "start": {
+        "line": 43,
+        "column": 50
+      },
+      "end": {
+        "line": 43,
+        "column": 88
+      }
+    },
+    "uid-34": {
+      "start": {
+        "line": 44,
+        "column": 4
+      },
+      "end": {
+        "line": 44,
+        "column": 86
+      }
+    },
+    "uid-35": {
+      "start": {
+        "line": 44,
         "column": 45
       },
       "end": {
-        "line": 36,
+        "line": 44,
         "column": 80
       }
     }

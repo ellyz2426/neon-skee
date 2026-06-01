@@ -15,8 +15,8 @@ import {
 // TYPES & CONSTANTS
 // ═══════════════════════════════════════════════════
 
-type GameState = 'title' | 'modeselect' | 'difficulty' | 'countdown' | 'aiming' | 'rolling' | 'scoring' | 'paused' | 'gameover' | 'leaderboard' | 'achievements' | 'settings' | 'help' | 'stats' | 'skins' | 'tutorial' | 'season' | 'seasonresult';
-type GameMode = 'classic' | 'speedround' | 'target' | 'progressive' | 'daily' | 'practice' | 'tournament' | 'season';
+type GameState = 'title' | 'modeselect' | 'difficulty' | 'countdown' | 'aiming' | 'rolling' | 'scoring' | 'paused' | 'gameover' | 'leaderboard' | 'achievements' | 'settings' | 'help' | 'stats' | 'skins' | 'tutorial' | 'season' | 'seasonresult' | 'customsetup' | 'replay';
+type GameMode = 'classic' | 'speedround' | 'target' | 'progressive' | 'daily' | 'practice' | 'tournament' | 'season' | 'custom';
 type Difficulty = 'easy' | 'medium' | 'hard';
 
 interface Ring {
@@ -221,7 +221,69 @@ const ACHIEVEMENTS: Achievement[] = [
   { id: 'total_250k', name: 'Quarter Million', desc: 'Accumulate 250,000 career points' },
   { id: 'boosted_1000', name: 'Boosted', desc: 'Score 1000+ while Score Boost active' },
   { id: 'streak_10', name: 'Untouchable', desc: '10 consecutive 50+ hits' },
+  // Round 4 achievements
+  { id: 'trick_first', name: 'Trickster', desc: 'Land your first trick shot' },
+  { id: 'trick_5', name: 'Showoff', desc: 'Land 5 different trick shots' },
+  { id: 'trick_all', name: 'Trick Master', desc: 'Land all 10 trick shot types' },
+  { id: 'replay_watch', name: 'Action Replay', desc: 'Watch an instant replay' },
+  { id: 'custom_play', name: 'My Rules', desc: 'Complete a Custom Challenge' },
+  { id: 'custom_hard', name: 'Masochist', desc: 'Score 500+ in Custom with 0.6x rings + 1.5x speed' },
+  { id: 'nothing_but_net', name: 'Nothing But Net', desc: 'Center 50 with 90%+ power' },
+  { id: 'hail_mary', name: 'Hail Mary', desc: 'Pocket 100 on your last ball' },
+  { id: 'spin_doctor', name: 'Spin Doctor', desc: 'Center 50 with max spin' },
+  { id: 'sniper', name: 'Sniper', desc: '3 consecutive center 50s' },
+  { id: 'sky_high', name: 'Sky High', desc: 'Ball peaks 0.5m+ above the board' },
+  { id: 'speed_1500', name: 'Speed Legend', desc: 'Score 1500+ in Speed Round' },
+  { id: 'total_500k', name: 'Half Million', desc: 'Accumulate 500,000 career points' },
+  { id: 'games_200', name: 'Obsessed', desc: 'Play 200 games' },
+  { id: 'perfect_hard_frame', name: 'Impossible Frame', desc: 'All 50+ hits on Hard difficulty' },
 ];
+
+// ═══════════════════════════════════════════════════
+// TRICK SHOTS
+// ═══════════════════════════════════════════════════
+
+interface TrickShot {
+  id: string;
+  name: string;
+  desc: string;
+  bonusXp: number;
+}
+
+const TRICK_SHOTS: TrickShot[] = [
+  { id: 'nothing_but_net', name: 'Nothing But Net', desc: 'Center 50 with 90%+ power', bonusXp: 25 },
+  { id: 'whisper_shot', name: 'Whisper Shot', desc: 'Score 40+ with under 30% power', bonusXp: 20 },
+  { id: 'full_send', name: 'Full Send', desc: 'Score any ring with 100% power', bonusXp: 15 },
+  { id: 'spin_doctor', name: 'Spin Doctor', desc: 'Center 50 with max spin (80%+)', bonusXp: 30 },
+  { id: 'buzzer_beater', name: 'Buzzer Beater', desc: 'Score 50+ on your last ball', bonusXp: 20 },
+  { id: 'hail_mary', name: 'Hail Mary', desc: 'Pocket 100 on your last ball', bonusXp: 50 },
+  { id: 'rail_rider', name: 'Rail Rider', desc: 'Ball touches rail then scores 30+', bonusXp: 20 },
+  { id: 'sky_high', name: 'Sky High', desc: 'Ball reaches peak height 0.5m+ above board', bonusXp: 15 },
+  { id: 'gentle_giant', name: 'Gentle Giant', desc: 'Pocket 100 with under 50% power', bonusXp: 35 },
+  { id: 'sniper', name: 'Sniper', desc: '3 consecutive center 50s', bonusXp: 40 },
+];
+
+// ═══════════════════════════════════════════════════
+// CUSTOM CHALLENGE CONFIG
+// ═══════════════════════════════════════════════════
+
+interface CustomConfig {
+  balls: number;
+  speedMult: number;
+  ringScale: number;
+  windX: number;
+  gravity: number;
+  powerUpChance: number;
+}
+
+const CUSTOM_DEFAULTS: CustomConfig = {
+  balls: 9,
+  speedMult: 1.0,
+  ringScale: 1.0,
+  windX: 0,
+  gravity: 1.0,
+  powerUpChance: 0.15,
+};
 
 // Tournament opponent names and personalities
 interface TournamentOpponent {
@@ -584,6 +646,26 @@ class GameStateManager {
   ghostHits = 0; // Track ghost ball multi-hits
   boostedScore = 0; // Track score while boost active
 
+  // Trick shot state
+  trickShotsLanded = new Set<string>(); // Persisted trick shot types
+  lastThrowPower = 0; // Power of the last throw
+  lastThrowSpin = 0; // Spin of the last throw
+  railTouched = false; // Did ball touch rail on this throw?
+  peakHeight = 0; // Max Y during flight
+  consecutiveFifties = 0; // Consecutive 50-point center hits
+  trickShotThisThrow: TrickShot | null = null; // Detected trick on this throw
+
+  // Replay state
+  replayFrames: Vector3[] = []; // Ball positions during current throw
+  lastReplayFrames: Vector3[] = []; // Saved from last throw for replay
+  replayPlaying = false;
+  replayIndex = 0;
+  replayTimer = 0;
+  autoReplayPending = false;
+
+  // Custom challenge state
+  customConfig: CustomConfig = { ...CUSTOM_DEFAULTS };
+
   // Season state
   seasonStageIndex = 0;
   seasonStars: number[] = []; // Stars per stage (0-3)
@@ -615,6 +697,8 @@ class GameStateManager {
     }
     // Restore power-ups used set
     this.powerUpsUsed = new Set(JSON.parse(localStorage.getItem('skee_powerups_used') || '[]'));
+    // Restore trick shots landed
+    this.trickShotsLanded = new Set(JSON.parse(localStorage.getItem('skee_tricks_landed') || '[]'));
   }
 
   get achievements() { return this._achievements; }
@@ -819,6 +903,63 @@ class GameStateManager {
     if (pu.id === 'scoreboost') this.boostedScore = 0;
   }
 
+  // Trick shot tracking
+  resetThrowTracking() {
+    this.railTouched = false;
+    this.peakHeight = 0;
+    this.trickShotThisThrow = null;
+    this.replayFrames = [];
+  }
+
+  recordReplayFrame(pos: Vector3) {
+    this.replayFrames.push(pos.clone());
+  }
+
+  saveReplay() {
+    this.lastReplayFrames = [...this.replayFrames];
+  }
+
+  detectTrickShot(points: number, isPocket: boolean): TrickShot | null {
+    // Check each trick shot condition
+    if (points === 50 && this.lastThrowPower >= 0.9) {
+      return TRICK_SHOTS.find(t => t.id === 'nothing_but_net')!;
+    }
+    if (points >= 40 && this.lastThrowPower < 0.3) {
+      return TRICK_SHOTS.find(t => t.id === 'whisper_shot')!;
+    }
+    if (points > 0 && this.lastThrowPower >= 0.99) {
+      return TRICK_SHOTS.find(t => t.id === 'full_send')!;
+    }
+    if (points === 50 && Math.abs(this.lastThrowSpin) >= 0.8) {
+      return TRICK_SHOTS.find(t => t.id === 'spin_doctor')!;
+    }
+    if (points >= 50 && this.ballsRemaining === 0) {
+      return TRICK_SHOTS.find(t => t.id === 'buzzer_beater')!;
+    }
+    if (isPocket && this.ballsRemaining === 0) {
+      return TRICK_SHOTS.find(t => t.id === 'hail_mary')!;
+    }
+    if (this.railTouched && points >= 30) {
+      return TRICK_SHOTS.find(t => t.id === 'rail_rider')!;
+    }
+    if (this.peakHeight >= BOARD_Y + 0.5) {
+      return TRICK_SHOTS.find(t => t.id === 'sky_high')!;
+    }
+    if (isPocket && this.lastThrowPower < 0.5) {
+      return TRICK_SHOTS.find(t => t.id === 'gentle_giant')!;
+    }
+    if (points === 50 && this.consecutiveFifties >= 2) {
+      return TRICK_SHOTS.find(t => t.id === 'sniper')!;
+    }
+    return null;
+  }
+
+  landTrickShot(trick: TrickShot) {
+    this.trickShotThisThrow = trick;
+    this.trickShotsLanded.add(trick.id);
+    localStorage.setItem('skee_tricks_landed', JSON.stringify([...this.trickShotsLanded]));
+  }
+
   updatePowerUpTimer(dt: number): boolean {
     if (!this.activePowerUp || this.activePowerUp.duration === 0) return false;
     this.powerUpTimer -= dt;
@@ -889,6 +1030,21 @@ class GameStateManager {
       ['total_250k', this._stats.totalScore >= 250000],
       ['boosted_1000', this.boostedScore >= 1000],
       ['streak_10', this.maxStreak >= 10],
+      // Round 4 achievements
+      ['trick_first', this.trickShotsLanded.size >= 1],
+      ['trick_5', this.trickShotsLanded.size >= 5],
+      ['trick_all', this.trickShotsLanded.size >= 10],
+      ['custom_play', this.mode === 'custom'],
+      ['custom_hard', this.mode === 'custom' && this.score >= 500 && this.customConfig.ringScale <= 0.6 && this.customConfig.speedMult >= 1.5],
+      ['nothing_but_net', this.trickShotsLanded.has('nothing_but_net')],
+      ['hail_mary', this.trickShotsLanded.has('hail_mary')],
+      ['spin_doctor', this.trickShotsLanded.has('spin_doctor')],
+      ['sniper', this.trickShotsLanded.has('sniper')],
+      ['sky_high', this.trickShotsLanded.has('sky_high')],
+      ['speed_1500', this.mode === 'speedround' && this.score >= 1500],
+      ['total_500k', this._stats.totalScore >= 500000],
+      ['games_200', this._stats.games >= 200],
+      ['perfect_hard_frame', this.difficulty === 'hard' && this.misses === 0 && this.hits >= BALLS_PER_FRAME && this.ballsRemaining === 0 && this.rollsThisFrame.every(r => r >= 50)],
     ];
     for (const [id, cond] of checks) {
       if (cond && this.unlock(id)) {
@@ -1133,6 +1289,9 @@ async function main() {
     const steps = 4;
     const subDt = dt / steps;
 
+    // Record replay frame
+    gsm.recordReplayFrame(ball.position.clone());
+
     for (let s = 0; s < steps; s++) {
       const pos = ball.position;
 
@@ -1143,8 +1302,8 @@ async function main() {
 
         // Lane bounds
         const halfW = LANE_WIDTH / 2 - 0.04;
-        if (pos.x < -halfW) { pos.x = -halfW; ballVelocity.x *= -0.5; }
-        if (pos.x > halfW) { pos.x = halfW; ballVelocity.x *= -0.5; }
+        if (pos.x < -halfW) { pos.x = -halfW; ballVelocity.x *= -0.5; gsm.railTouched = true; }
+        if (pos.x > halfW) { pos.x = halfW; ballVelocity.x *= -0.5; gsm.railTouched = true; }
 
         // Determine lane surface height at ball Z position
         const relZ = pos.z - (LANE_Z + LANE_LENGTH / 2);
@@ -1198,6 +1357,9 @@ async function main() {
         pos.y += ballVelocity.y * subDt * slowMult;
         pos.z += ballVelocity.z * subDt * slowMult;
 
+        // Track peak height for trick shots
+        if (pos.y > gsm.peakHeight) gsm.peakHeight = pos.y;
+
         // Spin / curve: lateral force proportional to spinX during flight
         if (Math.abs(gsm.spinX) > 0.05) {
           ballVelocity.x += gsm.spinX * 2.5 * subDt * slowMult;
@@ -1232,6 +1394,16 @@ async function main() {
           const stage = SEASON_STAGES[gsm.seasonStageIndex];
           if (stage?.modifiers.windX) {
             ballVelocity.x += stage.modifiers.windX * subDt * slowMult;
+          }
+        }
+
+        // Custom challenge modifiers
+        if (gsm.mode === 'custom') {
+          if (gsm.customConfig.windX !== 0) {
+            ballVelocity.x += gsm.customConfig.windX * subDt * slowMult;
+          }
+          if (gsm.customConfig.gravity !== 1.0) {
+            ballVelocity.y -= 9.81 * subDt * slowMult * (gsm.customConfig.gravity - 1);
           }
         }
 
@@ -1298,13 +1470,34 @@ async function main() {
     ballActive = false;
     ballPhase = 'rolling';
 
+    // Save replay
+    gsm.saveReplay();
+
     if (points > 0) {
       // Check for curved bullseye (spin was applied and hit center 50)
       if (points === 50 && gsm.spinApplied && Math.abs(gsm.spinX) > 0.2) {
         gsm.curvedBullseye = true;
       }
 
+      // Track consecutive fifties
+      if (points === 50) {
+        gsm.consecutiveFifties++;
+      } else {
+        gsm.consecutiveFifties = 0;
+      }
+
       gsm.registerScore(points, isPocket);
+
+      // Detect trick shot
+      const trick = gsm.detectTrickShot(points, isPocket);
+      if (trick) {
+        gsm.landTrickShot(trick);
+        audio.achievementSound();
+        showToast(`🎯 TRICK SHOT: ${trick.name}!`);
+        gsm.awardXp(trick.bonusXp);
+        // Auto-replay on trick shots
+        gsm.autoReplayPending = true;
+      }
       // Score popup VFX
       if (ball) {
         const popColor = isPocket ? gsm.theme.pocket : points >= 50 ? gsm.theme.ring1 : points >= 30 ? gsm.theme.ring3 : gsm.theme.ring5;
@@ -1334,6 +1527,7 @@ async function main() {
       showToast(`+${points * gsm.comboMultiplier}${gsm.comboMultiplier > 1 ? ' x' + gsm.comboMultiplier : ''}`);
     } else {
       gsm.registerMiss();
+      gsm.consecutiveFifties = 0;
       audio.gutterSound();
       showToast('GUTTER');
     }
@@ -1376,6 +1570,8 @@ async function main() {
     let chance = 0;
     if (gsm.mode === 'season') {
       chance = SEASON_STAGES[gsm.seasonStageIndex]?.powerUpChance || 0;
+    } else if (gsm.mode === 'custom') {
+      chance = gsm.customConfig.powerUpChance;
     } else if (gsm.mode === 'daily' || gsm.mode === 'tournament') {
       chance = 0.15;
     } else if (gsm.mode === 'practice') {
@@ -1582,6 +1778,88 @@ async function main() {
 
   // ═══ RING FLASH EFFECT ═══
   const ringFlashes: { mesh: Mesh; life: number }[] = [];
+
+  // ═══ INSTANT REPLAY ═══
+  const replayTrailMeshes: Mesh[] = [];
+  let replayGhostBall: Mesh | null = null;
+
+  function startReplay() {
+    if (gsm.lastReplayFrames.length < 5) return;
+    gsm.replayPlaying = true;
+    gsm.replayIndex = 0;
+    gsm.replayTimer = 0;
+    gsm.autoReplayPending = false;
+    // Show replay indicator
+    if (panelEntities['replay']?.object3D) panelEntities['replay'].object3D.visible = true;
+    setText(panelEntities['replay'], 'replay-label', '◀◀ REPLAY');
+    // Create ghost ball
+    if (!replayGhostBall) {
+      replayGhostBall = new Mesh(
+        new SphereGeometry(0.035, 12, 12),
+        new MeshBasicMaterial({ color: new Color('#ffffff'), transparent: true, opacity: 0.7, blending: AdditiveBlending })
+      );
+    }
+    world.scene.add(replayGhostBall);
+    // Unlock replay achievement
+    if (gsm.unlock('replay_watch')) {
+      const ach = ACHIEVEMENTS.find(a => a.id === 'replay_watch');
+      if (ach) {
+        audio.achievementSound();
+        showToast('Achievement: ' + ach.name);
+      }
+    }
+  }
+
+  function stopReplay() {
+    gsm.replayPlaying = false;
+    gsm.replayIndex = 0;
+    if (panelEntities['replay']?.object3D) panelEntities['replay'].object3D.visible = false;
+    if (replayGhostBall) {
+      world.scene.remove(replayGhostBall);
+    }
+    // Clear replay trail
+    replayTrailMeshes.forEach(m => world.scene.remove(m));
+    replayTrailMeshes.length = 0;
+  }
+
+  function updateReplay(dt: number) {
+    if (!gsm.replayPlaying || gsm.lastReplayFrames.length < 5) {
+      if (gsm.replayPlaying) stopReplay();
+      return;
+    }
+    gsm.replayTimer += dt;
+    // Slow-mo replay: 3x slower
+    const replaySpeed = 0.33;
+    const frameInterval = 1 / 60; // Original capture rate approx
+    const targetFrame = Math.floor(gsm.replayTimer / (frameInterval / replaySpeed));
+
+    if (targetFrame >= gsm.lastReplayFrames.length) {
+      // Replay finished
+      stopReplay();
+      return;
+    }
+
+    gsm.replayIndex = targetFrame;
+    const pos = gsm.lastReplayFrames[targetFrame];
+    if (replayGhostBall && pos) {
+      replayGhostBall.position.copy(pos);
+      // Add trail point
+      if (targetFrame % 3 === 0) {
+        const dot = new Mesh(
+          new SphereGeometry(0.006, 4, 4),
+          new MeshBasicMaterial({ color: new Color('#ffffff'), transparent: true, opacity: 0.5, blending: AdditiveBlending })
+        );
+        dot.position.copy(pos);
+        world.scene.add(dot);
+        replayTrailMeshes.push(dot);
+      }
+    }
+    // Fade older trail meshes
+    replayTrailMeshes.forEach((m, i) => {
+      const age = (replayTrailMeshes.length - i) / replayTrailMeshes.length;
+      (m.material as MeshBasicMaterial).opacity = age * 0.5;
+    });
+  }
 
   function spawnRingFlash(hitX: number, hitY: number, colorStr: string) {
     // Bright flash at impact point on the scoring board
@@ -1934,10 +2212,12 @@ async function main() {
   createPanel('season', 'season', { width: 0.9, height: 0.9, pos: [0, 1.5, -2] });
   createPanel('seasonresult', 'seasonresult', { width: 0.8, height: 0.7, pos: [0, 1.5, -2] });
   createPanel('poweruphud', 'poweruphud', { width: 0.25, height: 0.06, follower: true, pos: [-0.2, 0.06, -0.5] });
+  createPanel('replay', 'replay', { width: 0.2, height: 0.04, follower: true, pos: [0, 0.15, -0.5] });
+  createPanel('customsetup', 'customsetup', { width: 0.9, height: 0.9, pos: [0, 1.5, -2] });
 
   // Panel visibility management
   function showUI(name: string) {
-    const allPanels = ['title', 'modeselect', 'difficulty', 'pause', 'gameover', 'leaderboard', 'achievements', 'settings', 'help', 'stats', 'skins', 'tutorial', 'season', 'seasonresult'];
+    const allPanels = ['title', 'modeselect', 'difficulty', 'pause', 'gameover', 'leaderboard', 'achievements', 'settings', 'help', 'stats', 'skins', 'tutorial', 'season', 'seasonresult', 'customsetup'];
     allPanels.forEach(p => {
       if (panelEntities[p]?.object3D) panelEntities[p].object3D.visible = (p === name);
     });
@@ -2091,6 +2371,18 @@ async function main() {
     }
   }
 
+  function updateCustomSetupPanel() {
+    const e = panelEntities['customsetup'];
+    if (!e) return;
+    const c = gsm.customConfig;
+    setText(e, 'custom-balls', String(c.balls));
+    setText(e, 'custom-speed', `${c.speedMult.toFixed(1)}x`);
+    setText(e, 'custom-ring', `${c.ringScale.toFixed(1)}x`);
+    setText(e, 'custom-wind', c.windX === 0 ? '0' : `${c.windX.toFixed(2)}`);
+    setText(e, 'custom-grav', `${c.gravity.toFixed(1)}x`);
+    setText(e, 'custom-pu', `${Math.round(c.powerUpChance * 100)}%`);
+  }
+
   function updateSeasonPanel() {
     const e = panelEntities['season'];
     if (!e) return;
@@ -2216,6 +2508,7 @@ async function main() {
       bindBtn('modeselect', 'btn-practice', () => { audio.buttonClick(); gsm.mode = 'practice'; gsm.difficulty = 'easy'; startGame(); });
       bindBtn('modeselect', 'btn-tournament', () => { audio.buttonClick(); gsm.mode = 'tournament'; gameState = 'difficulty'; showUI('difficulty'); });
       bindBtn('modeselect', 'btn-season', () => { audio.buttonClick(); gameState = 'season'; showUI('season'); updateSeasonPanel(); });
+      bindBtn('modeselect', 'btn-custom', () => { audio.buttonClick(); gsm.customConfig = { ...CUSTOM_DEFAULTS }; gameState = 'customsetup'; showUI('customsetup'); updateCustomSetupPanel(); });
       bindBtn('modeselect', 'btn-back-mode', () => { audio.buttonClick(); gameState = 'title'; showUI('title'); });
 
       // Season panel
@@ -2252,6 +2545,23 @@ async function main() {
         }
       });
       bindBtn('seasonresult', 'btn-sr-back', () => { audio.buttonClick(); gameState = 'season'; showUI('season'); updateSeasonPanel(); });
+
+      // Custom Challenge setup
+      bindBtn('customsetup', 'btn-custom-balls-down', () => { audio.buttonClick(); gsm.customConfig.balls = Math.max(3, gsm.customConfig.balls - 1); updateCustomSetupPanel(); });
+      bindBtn('customsetup', 'btn-custom-balls-up', () => { audio.buttonClick(); gsm.customConfig.balls = Math.min(20, gsm.customConfig.balls + 1); updateCustomSetupPanel(); });
+      bindBtn('customsetup', 'btn-custom-speed-down', () => { audio.buttonClick(); gsm.customConfig.speedMult = Math.max(0.5, +(gsm.customConfig.speedMult - 0.1).toFixed(1)); updateCustomSetupPanel(); });
+      bindBtn('customsetup', 'btn-custom-speed-up', () => { audio.buttonClick(); gsm.customConfig.speedMult = Math.min(2.0, +(gsm.customConfig.speedMult + 0.1).toFixed(1)); updateCustomSetupPanel(); });
+      bindBtn('customsetup', 'btn-custom-ring-down', () => { audio.buttonClick(); gsm.customConfig.ringScale = Math.max(0.4, +(gsm.customConfig.ringScale - 0.1).toFixed(1)); updateCustomSetupPanel(); });
+      bindBtn('customsetup', 'btn-custom-ring-up', () => { audio.buttonClick(); gsm.customConfig.ringScale = Math.min(1.5, +(gsm.customConfig.ringScale + 0.1).toFixed(1)); updateCustomSetupPanel(); });
+      bindBtn('customsetup', 'btn-custom-wind-down', () => { audio.buttonClick(); gsm.customConfig.windX = Math.max(-0.5, +(gsm.customConfig.windX - 0.05).toFixed(2)); updateCustomSetupPanel(); });
+      bindBtn('customsetup', 'btn-custom-wind-up', () => { audio.buttonClick(); gsm.customConfig.windX = Math.min(0.5, +(gsm.customConfig.windX + 0.05).toFixed(2)); updateCustomSetupPanel(); });
+      bindBtn('customsetup', 'btn-custom-grav-down', () => { audio.buttonClick(); gsm.customConfig.gravity = Math.max(0.5, +(gsm.customConfig.gravity - 0.1).toFixed(1)); updateCustomSetupPanel(); });
+      bindBtn('customsetup', 'btn-custom-grav-up', () => { audio.buttonClick(); gsm.customConfig.gravity = Math.min(2.0, +(gsm.customConfig.gravity + 0.1).toFixed(1)); updateCustomSetupPanel(); });
+      bindBtn('customsetup', 'btn-custom-pu-down', () => { audio.buttonClick(); gsm.customConfig.powerUpChance = Math.max(0, +(gsm.customConfig.powerUpChance - 0.05).toFixed(2)); updateCustomSetupPanel(); });
+      bindBtn('customsetup', 'btn-custom-pu-up', () => { audio.buttonClick(); gsm.customConfig.powerUpChance = Math.min(1.0, +(gsm.customConfig.powerUpChance + 0.05).toFixed(2)); updateCustomSetupPanel(); });
+      bindBtn('customsetup', 'btn-custom-start', () => { audio.buttonClick(); gsm.mode = 'custom'; gsm.difficulty = 'medium'; startGame(); });
+      bindBtn('customsetup', 'btn-custom-reset', () => { audio.buttonClick(); gsm.customConfig = { ...CUSTOM_DEFAULTS }; updateCustomSetupPanel(); });
+      bindBtn('customsetup', 'btn-custom-back', () => { audio.buttonClick(); gameState = 'modeselect'; showUI('modeselect'); });
 
       // Difficulty
       bindBtn('difficulty', 'btn-easy', () => { audio.buttonClick(); gsm.difficulty = 'easy'; startGame(); });
@@ -2344,6 +2654,8 @@ async function main() {
     } else if (gsm.mode === 'season') {
       const stage = SEASON_STAGES[gsm.seasonStageIndex];
       gsm.ballsRemaining = stage.balls;
+    } else if (gsm.mode === 'custom') {
+      gsm.ballsRemaining = gsm.customConfig.balls;
     }
 
     // Clear power-up state
@@ -2460,6 +2772,11 @@ async function main() {
     ballActive = true;
     gameState = 'rolling';
 
+    // Save throw parameters for trick shot detection
+    gsm.lastThrowPower = gsm.power;
+    gsm.lastThrowSpin = gsm.spinX;
+    gsm.resetThrowTracking();
+
     // Calculate velocity from power and aim
     let speed = gsm.power * 6 + 2; // min 2, max 8 m/s
 
@@ -2481,6 +2798,11 @@ async function main() {
     if (gsm.mode === 'season') {
       const stage = SEASON_STAGES[gsm.seasonStageIndex];
       if (stage?.modifiers.speedMult) speed *= stage.modifiers.speedMult;
+    }
+
+    // Custom challenge speed modifier
+    if (gsm.mode === 'custom') {
+      speed *= gsm.customConfig.speedMult;
     }
 
     const aimAngle = gsm.aimX * 0.15; // Slight lateral angle
@@ -2592,6 +2914,15 @@ async function main() {
     updateRingFlashes(dt);
     updateExtraBalls(dt);
     updatePowerUpOrb(dt, totalTime);
+    updateReplay(dt);
+
+    // Auto-replay after trick shots (with delay)
+    if (gsm.autoReplayPending && !ballActive && !gsm.replayPlaying) {
+      gsm.autoReplayPending = false;
+      setTimeout(() => {
+        if (!ballActive && gsm.lastReplayFrames.length >= 5) startReplay();
+      }, 400);
+    }
 
     // Power-up timer
     if (gsm.activePowerUp && gsm.activePowerUp.duration > 0) {

@@ -30,6 +30,9 @@
     <div id="btn-practice" class="btn"><span class="btn-text">PRACTICE</span></div>
     <div id="btn-season" class="btn-gold btn"><span class="btn-gold-text">SEASON</span></div>
   </div>
+  <div class="mode-row">
+    <div id="btn-custom" class="btn" style="background-color: rgba(255,136,0,0.15); border-color: #ff8800;"><span style="font-size: 1.4; color: #ff8800;">CUSTOM</span></div>
+  </div>
   <span class="desc">Classic: 9 balls, best score. Speed: timed rush. Target: hit specific rings.</span>
   <div id="btn-back-mode" class="back-btn"><span class="back-text">BACK</span></div>
 </div>

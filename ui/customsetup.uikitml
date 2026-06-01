@@ -1,0 +1,82 @@
+<panel background-color="rgba(0,0,0,0.85)" border-radius="16" padding="20" flex-direction="column" align-items="center" gap="10" width="100%">
+  <text font-size="22" color="#ff8800" font-weight="bold">CUSTOM CHALLENGE</text>
+  <text font-size="12" color="#888888">Set your own rules</text>
+  
+  <panel flex-direction="row" align-items="center" gap="8" width="100%">
+    <text font-size="13" color="#cccccc" width="35%">Balls:</text>
+    <panel id="btn-custom-balls-down" background-color="rgba(255,136,0,0.3)" border-radius="6" padding="4 10" cursor="pointer">
+      <text font-size="14" color="#ff8800">−</text>
+    </panel>
+    <text id="custom-balls" font-size="14" color="#ffffff" width="20%" text-align="center">9</text>
+    <panel id="btn-custom-balls-up" background-color="rgba(255,136,0,0.3)" border-radius="6" padding="4 10" cursor="pointer">
+      <text font-size="14" color="#ff8800">+</text>
+    </panel>
+  </panel>
+
+  <panel flex-direction="row" align-items="center" gap="8" width="100%">
+    <text font-size="13" color="#cccccc" width="35%">Speed:</text>
+    <panel id="btn-custom-speed-down" background-color="rgba(255,136,0,0.3)" border-radius="6" padding="4 10" cursor="pointer">
+      <text font-size="14" color="#ff8800">−</text>
+    </panel>
+    <text id="custom-speed" font-size="14" color="#ffffff" width="20%" text-align="center">1.0x</text>
+    <panel id="btn-custom-speed-up" background-color="rgba(255,136,0,0.3)" border-radius="6" padding="4 10" cursor="pointer">
+      <text font-size="14" color="#ff8800">+</text>
+    </panel>
+  </panel>
+
+  <panel flex-direction="row" align-items="center" gap="8" width="100%">
+    <text font-size="13" color="#cccccc" width="35%">Ring Size:</text>
+    <panel id="btn-custom-ring-down" background-color="rgba(255,136,0,0.3)" border-radius="6" padding="4 10" cursor="pointer">
+      <text font-size="14" color="#ff8800">−</text>
+    </panel>
+    <text id="custom-ring" font-size="14" color="#ffffff" width="20%" text-align="center">1.0x</text>
+    <panel id="btn-custom-ring-up" background-color="rgba(255,136,0,0.3)" border-radius="6" padding="4 10" cursor="pointer">
+      <text font-size="14" color="#ff8800">+</text>
+    </panel>
+  </panel>
+
+  <panel flex-direction="row" align-items="center" gap="8" width="100%">
+    <text font-size="13" color="#cccccc" width="35%">Wind:</text>
+    <panel id="btn-custom-wind-down" background-color="rgba(255,136,0,0.3)" border-radius="6" padding="4 10" cursor="pointer">
+      <text font-size="14" color="#ff8800">−</text>
+    </panel>
+    <text id="custom-wind" font-size="14" color="#ffffff" width="20%" text-align="center">0</text>
+    <panel id="btn-custom-wind-up" background-color="rgba(255,136,0,0.3)" border-radius="6" padding="4 10" cursor="pointer">
+      <text font-size="14" color="#ff8800">+</text>
+    </panel>
+  </panel>
+
+  <panel flex-direction="row" align-items="center" gap="8" width="100%">
+    <text font-size="13" color="#cccccc" width="35%">Gravity:</text>
+    <panel id="btn-custom-grav-down" background-color="rgba(255,136,0,0.3)" border-radius="6" padding="4 10" cursor="pointer">
+      <text font-size="14" color="#ff8800">−</text>
+    </panel>
+    <text id="custom-grav" font-size="14" color="#ffffff" width="20%" text-align="center">1.0x</text>
+    <panel id="btn-custom-grav-up" background-color="rgba(255,136,0,0.3)" border-radius="6" padding="4 10" cursor="pointer">
+      <text font-size="14" color="#ff8800">+</text>
+    </panel>
+  </panel>
+
+  <panel flex-direction="row" align-items="center" gap="8" width="100%">
+    <text font-size="13" color="#cccccc" width="35%">Power-Ups:</text>
+    <panel id="btn-custom-pu-down" background-color="rgba(255,136,0,0.3)" border-radius="6" padding="4 10" cursor="pointer">
+      <text font-size="14" color="#ff8800">−</text>
+    </panel>
+    <text id="custom-pu" font-size="14" color="#ffffff" width="20%" text-align="center">15%</text>
+    <panel id="btn-custom-pu-up" background-color="rgba(255,136,0,0.3)" border-radius="6" padding="4 10" cursor="pointer">
+      <text font-size="14" color="#ff8800">+</text>
+    </panel>
+  </panel>
+
+  <panel flex-direction="row" gap="12" margin-top="8">
+    <panel id="btn-custom-start" background-color="rgba(0,255,136,0.3)" border-radius="10" padding="10 24" cursor="pointer">
+      <text font-size="16" color="#00ff88" font-weight="bold">START</text>
+    </panel>
+    <panel id="btn-custom-reset" background-color="rgba(255,255,255,0.1)" border-radius="10" padding="10 16" cursor="pointer">
+      <text font-size="14" color="#888888">Reset</text>
+    </panel>
+    <panel id="btn-custom-back" background-color="rgba(255,255,255,0.1)" border-radius="10" padding="10 16" cursor="pointer">
+      <text font-size="14" color="#888888">Back</text>
+    </panel>
+  </panel>
+</panel>
