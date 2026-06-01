@@ -1,0 +1,25 @@
+<style>
+  .sr-panel { display: flex; flex-direction: column; padding-top: 3; padding-bottom: 3; padding-left: 4; padding-right: 4; background-color: rgba(0,0,0,0.9); border-color: #ffaa00; border-width: 0.15; border-radius: 1.5; align-items: center; gap: 1.5; }
+  .sr-title { font-size: 3; color: #ffaa00; font-weight: bold; }
+  .sr-stage { font-size: 1.6; color: #cccccc; }
+  .sr-score { font-size: 2.5; color: #00ffff; font-weight: bold; }
+  .sr-stars { font-size: 3; color: #ffaa00; }
+  .sr-target { font-size: 1.2; color: #888888; }
+  .sr-msg { font-size: 1.4; color: #00ff88; }
+  .btn-row { display: flex; flex-direction: row; gap: 1.5; }
+  .btn { padding-top: 1; padding-bottom: 1; padding-left: 2; padding-right: 2; background-color: rgba(255,170,0,0.1); border-color: #ffaa00; border-width: 0.08; border-radius: 0.5; cursor: pointer; }
+  .btn-text { font-size: 1.4; color: #ffaa00; }
+</style>
+<div class="sr-panel">
+  <span class="sr-title">STAGE COMPLETE</span>
+  <span id="sr-stage-name" class="sr-stage">Stage Name</span>
+  <span id="sr-score" class="sr-score">0</span>
+  <span id="sr-stars" class="sr-stars">☆☆☆</span>
+  <span id="sr-target" class="sr-target">Target: 200</span>
+  <span id="sr-msg" class="sr-msg"></span>
+  <div class="btn-row">
+    <div id="btn-sr-retry" class="btn"><span class="btn-text">RETRY</span></div>
+    <div id="btn-sr-next" class="btn"><span class="btn-text">NEXT STAGE</span></div>
+    <div id="btn-sr-back" class="btn"><span class="btn-text">SEASON MAP</span></div>
+  </div>
+</div>

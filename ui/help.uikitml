@@ -30,8 +30,12 @@
   <span class="help-text">Earn XP from every game to level up</span>
   <span class="help-text">Hard mode + tournaments give bonus XP</span>
   <span class="help-text">Unlock premium ball skins at Lv.5, 10, 15</span>
-  <span class="section-title">7 GAME MODES</span>
-  <span class="help-text">Classic | Speed | Target | Progressive | Daily | Tournament | Practice</span>
+  <span class="section-title">POWER-UPS</span>
+  <span class="help-text">Glowing orbs appear on the lane — roll through them!</span>
+  <span class="help-highlight">Multi-Ball | Magnet | Big Ball | Score ×2 | Ghost</span>
+  <span class="section-title">8 GAME MODES</span>
+  <span class="help-text">Classic | Speed | Target | Progressive | Daily | Tournament | Practice | Season</span>
+  <span class="help-text">Season: 8-stage campaign with star ratings and unique modifiers</span>
   <div class="btn-row">
     <div id="btn-tutorial-replay" class="tut-btn"><span class="tut-text">TUTORIAL</span></div>
     <div id="btn-back-help" class="back-btn"><span class="back-text">BACK</span></div>

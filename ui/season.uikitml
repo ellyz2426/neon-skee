@@ -1,0 +1,60 @@
+<style>
+  .season-panel { display: flex; flex-direction: column; padding-top: 3; padding-bottom: 3; padding-left: 4; padding-right: 4; background-color: rgba(0,0,0,0.9); border-color: #ffaa00; border-width: 0.15; border-radius: 1.5; align-items: center; gap: 1; }
+  .season-title { font-size: 3; color: #ffaa00; font-weight: bold; }
+  .stage-row { display: flex; flex-direction: row; gap: 1.5; align-items: center; justify-content: center; }
+  .stage-btn { padding-top: 0.6; padding-bottom: 0.6; padding-left: 1.5; padding-right: 1.5; background-color: rgba(255,170,0,0.1); border-color: #ffaa00; border-width: 0.08; border-radius: 0.5; cursor: pointer; display: flex; flex-direction: column; align-items: center; min-width: 14; }
+  .stage-name { font-size: 1.2; color: #ffaa00; font-weight: bold; }
+  .stage-stars { font-size: 1; color: #888888; }
+  .stage-desc { font-size: 0.9; color: #666666; }
+  .stage-locked { background-color: rgba(100,100,100,0.05); border-color: #444444; }
+  .locked-text { font-size: 1.2; color: #444444; }
+  .total-stars { font-size: 1.4; color: #ffaa00; }
+  .back-btn { padding-top: 0.5; padding-bottom: 0.5; padding-left: 1.5; padding-right: 1.5; background-color: rgba(255,255,255,0.05); border-color: #666666; border-width: 0.05; border-radius: 0.4; cursor: pointer; }
+  .back-text { font-size: 1.2; color: #888888; }
+</style>
+<div class="season-panel">
+  <span class="season-title">SEASON MODE</span>
+  <span id="total-stars" class="total-stars">★ 0 / 24</span>
+  <div class="stage-row">
+    <div id="btn-stage-0" class="stage-btn">
+      <span id="stage-name-0" class="stage-name">Stage 1</span>
+      <span id="stage-stars-0" class="stage-stars">☆☆☆</span>
+    </div>
+    <div id="btn-stage-1" class="stage-btn">
+      <span id="stage-name-1" class="stage-name">Stage 2</span>
+      <span id="stage-stars-1" class="stage-stars">☆☆☆</span>
+    </div>
+  </div>
+  <div class="stage-row">
+    <div id="btn-stage-2" class="stage-btn">
+      <span id="stage-name-2" class="stage-name">Stage 3</span>
+      <span id="stage-stars-2" class="stage-stars">☆☆☆</span>
+    </div>
+    <div id="btn-stage-3" class="stage-btn">
+      <span id="stage-name-3" class="stage-name">Stage 4</span>
+      <span id="stage-stars-3" class="stage-stars">☆☆☆</span>
+    </div>
+  </div>
+  <div class="stage-row">
+    <div id="btn-stage-4" class="stage-btn">
+      <span id="stage-name-4" class="stage-name">Stage 5</span>
+      <span id="stage-stars-4" class="stage-stars">☆☆☆</span>
+    </div>
+    <div id="btn-stage-5" class="stage-btn">
+      <span id="stage-name-5" class="stage-name">Stage 6</span>
+      <span id="stage-stars-5" class="stage-stars">☆☆☆</span>
+    </div>
+  </div>
+  <div class="stage-row">
+    <div id="btn-stage-6" class="stage-btn">
+      <span id="stage-name-6" class="stage-name">Stage 7</span>
+      <span id="stage-stars-6" class="stage-stars">☆☆☆</span>
+    </div>
+    <div id="btn-stage-7" class="stage-btn">
+      <span id="stage-name-7" class="stage-name">Stage 8</span>
+      <span id="stage-stars-7" class="stage-stars">☆☆☆</span>
+    </div>
+  </div>
+  <span id="stage-desc-current" class="stage-desc">Select a stage to begin</span>
+  <div id="btn-back-season" class="back-btn"><span class="back-text">BACK</span></div>
+</div>

@@ -1,0 +1,11 @@
+<style>
+  .pu-panel { display: flex; flex-direction: row; padding-top: 0.4; padding-bottom: 0.4; padding-left: 1; padding-right: 1; background-color: rgba(0,0,0,0.6); border-color: #ff00ff; border-width: 0.08; border-radius: 0.5; gap: 0.8; align-items: center; }
+  .pu-icon { font-size: 1.8; color: #ff00ff; font-weight: bold; }
+  .pu-name { font-size: 1; color: #ff00ff; }
+  .pu-timer { font-size: 1.2; color: #ffaa00; font-weight: bold; }
+</style>
+<div class="pu-panel">
+  <span id="pu-icon" class="pu-icon"></span>
+  <span id="pu-name" class="pu-name"></span>
+  <span id="pu-timer" class="pu-timer"></span>
+</div>

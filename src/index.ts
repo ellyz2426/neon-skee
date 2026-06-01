@@ -15,8 +15,8 @@ import {
 // TYPES & CONSTANTS
 // ═══════════════════════════════════════════════════
 
-type GameState = 'title' | 'modeselect' | 'difficulty' | 'countdown' | 'aiming' | 'rolling' | 'scoring' | 'paused' | 'gameover' | 'leaderboard' | 'achievements' | 'settings' | 'help' | 'stats' | 'skins' | 'tutorial';
-type GameMode = 'classic' | 'speedround' | 'target' | 'progressive' | 'daily' | 'practice' | 'tournament';
+type GameState = 'title' | 'modeselect' | 'difficulty' | 'countdown' | 'aiming' | 'rolling' | 'scoring' | 'paused' | 'gameover' | 'leaderboard' | 'achievements' | 'settings' | 'help' | 'stats' | 'skins' | 'tutorial' | 'season' | 'seasonresult';
+type GameMode = 'classic' | 'speedround' | 'target' | 'progressive' | 'daily' | 'practice' | 'tournament' | 'season';
 type Difficulty = 'easy' | 'medium' | 'hard';
 
 interface Ring {
@@ -119,6 +119,50 @@ const BALL_SKINS: BallSkin[] = [
   { name: 'Inferno Red', color: '#ff2222', emissive: '#440000', glow: '#ff2222', trail: '#ff2222' },
 ];
 
+// ═══════════════════════════════════════════════════
+// POWER-UPS
+// ═══════════════════════════════════════════════════
+
+interface PowerUpDef {
+  id: string;
+  name: string;
+  desc: string;
+  color: string;
+  duration: number; // seconds, 0 = instant
+}
+
+const POWER_UP_DEFS: PowerUpDef[] = [
+  { id: 'multiball', name: 'Multi-Ball', desc: 'Launch 3 balls at once', color: '#ff00ff', duration: 0 },
+  { id: 'magnet', name: 'Magnet', desc: 'Ball curves toward center', color: '#00ff88', duration: 15 },
+  { id: 'bigball', name: 'Big Ball', desc: 'Larger ball, easier hits', color: '#ffaa00', duration: 15 },
+  { id: 'scoreboost', name: 'Score ×2', desc: 'All scores doubled', color: '#ff4400', duration: 20 },
+  { id: 'ghost', name: 'Ghost Ball', desc: 'Ball passes through for multi-hits', color: '#8844ff', duration: 0 },
+];
+
+// ═══════════════════════════════════════════════════
+// SEASON / CAMPAIGN
+// ═══════════════════════════════════════════════════
+
+interface SeasonStage {
+  name: string;
+  desc: string;
+  balls: number;
+  targetScore: number;
+  modifiers: { speedMult?: number; ringScale?: number; windX?: number; gravity?: number };
+  powerUpChance: number;
+}
+
+const SEASON_STAGES: SeasonStage[] = [
+  { name: 'Rookie Lane', desc: 'Warm up! Score 200 for 3 stars.', balls: 9, targetScore: 200, modifiers: {}, powerUpChance: 0.2 },
+  { name: 'Neon Alley', desc: 'Rings are tighter.', balls: 9, targetScore: 300, modifiers: { ringScale: 0.85 }, powerUpChance: 0.2 },
+  { name: 'Wind Tunnel', desc: 'Crosswind pushes your ball.', balls: 9, targetScore: 350, modifiers: { windX: 0.15 }, powerUpChance: 0.25 },
+  { name: 'Speed Demon', desc: 'Balls roll faster!', balls: 9, targetScore: 400, modifiers: { speedMult: 1.25 }, powerUpChance: 0.25 },
+  { name: 'Shrunken Board', desc: 'Smaller rings demand precision.', balls: 9, targetScore: 350, modifiers: { ringScale: 0.7 }, powerUpChance: 0.3 },
+  { name: 'Heavy Gravity', desc: 'Higher gravity pulls balls down.', balls: 9, targetScore: 400, modifiers: { gravity: 1.4 }, powerUpChance: 0.3 },
+  { name: 'Gale Force', desc: 'Strong wind. Use spin!', balls: 12, targetScore: 500, modifiers: { windX: 0.3, speedMult: 1.1 }, powerUpChance: 0.35 },
+  { name: 'Championship', desc: 'Tight rings, fast balls, heavy gravity.', balls: 12, targetScore: 600, modifiers: { ringScale: 0.7, speedMult: 1.3, gravity: 1.3 }, powerUpChance: 0.35 },
+];
+
 const ACHIEVEMENTS: Achievement[] = [
   { id: 'first_roll', name: 'First Roll', desc: 'Roll your first ball' },
   { id: 'bullseye', name: 'Bullseye', desc: 'Hit the 50-point center' },
@@ -161,6 +205,22 @@ const ACHIEVEMENTS: Achievement[] = [
   { id: 'progressive_10', name: 'Endurance', desc: 'Clear 10 progressive frames' },
   { id: 'triple_pocket', name: 'Pocket Ace', desc: 'Hit 3 pocket shots in one frame' },
   { id: 'no_miss_hard', name: 'Perfectionist', desc: 'No misses on Hard difficulty' },
+  // Round 3 achievements
+  { id: 'powerup_collect', name: 'Powered Up', desc: 'Collect your first power-up' },
+  { id: 'powerup_all', name: 'Full Arsenal', desc: 'Use all 5 power-up types' },
+  { id: 'multiball_hit', name: 'Triple Threat', desc: 'Score with all 3 Multi-Balls' },
+  { id: 'magnet_50', name: 'Magnetic Pull', desc: 'Hit center 50 with Magnet active' },
+  { id: 'ghost_multi', name: 'Phantom Scorer', desc: 'Score 3+ rings with one Ghost Ball' },
+  { id: 'season_stage_1', name: 'First Steps', desc: 'Complete Season Stage 1' },
+  { id: 'season_stage_4', name: 'Halfway There', desc: 'Complete 4 Season stages' },
+  { id: 'season_complete', name: 'Season Champion', desc: 'Complete all 8 Season stages' },
+  { id: 'season_perfect', name: 'Perfect Season', desc: 'Get 3 stars on all Season stages' },
+  { id: 'season_3star', name: 'Star Collector', desc: 'Earn your first 3-star rating' },
+  { id: 'score_3000', name: 'Ultra Score', desc: 'Score 3000+ in one frame' },
+  { id: 'score_5000', name: 'God Score', desc: 'Score 5000+ in one frame' },
+  { id: 'total_250k', name: 'Quarter Million', desc: 'Accumulate 250,000 career points' },
+  { id: 'boosted_1000', name: 'Boosted', desc: 'Score 1000+ while Score Boost active' },
+  { id: 'streak_10', name: 'Untouchable', desc: '10 consecutive 50+ hits' },
 ];
 
 // Tournament opponent names and personalities
@@ -432,6 +492,34 @@ class AudioManager {
     setTimeout(() => this.playTone(1100, 'sine', 0.15, 0.2), 120);
   }
 
+  powerUpCollect() {
+    [880, 1100, 1320, 1760].forEach((n, i) => {
+      setTimeout(() => this.playTone(n, 'sine', 0.2, 0.25), i * 60);
+    });
+  }
+
+  powerUpExpire() {
+    this.playTone(300, 'triangle', 0.3, 0.15);
+    this.playTone(200, 'triangle', 0.4, 0.1);
+  }
+
+  seasonComplete() {
+    [523, 659, 784, 1047, 1319, 1568].forEach((n, i) => {
+      setTimeout(() => this.playTone(n, 'sine', 0.4, 0.3), i * 120);
+    });
+  }
+
+  starEarned() {
+    this.playTone(1047, 'sine', 0.3, 0.25);
+    setTimeout(() => this.playTone(1319, 'sine', 0.25, 0.2), 150);
+  }
+
+  scorePopSound(points: number) {
+    // Quick pitch based on points
+    const freq = 400 + points * 4;
+    this.playTone(freq, 'sine', 0.08, 0.12);
+  }
+
   setMasterVolume(v: number) { if (this.masterGain) this.masterGain.gain.value = v; }
   setSfxVolume(v: number) { if (this.sfxGain) this.sfxGain.gain.value = v; }
   setMusicVolume(v: number) { if (this.musicGain) this.musicGain.gain.value = v; }
@@ -488,6 +576,18 @@ class GameStateManager {
   // Spin tracking
   spinApplied = false; // Was spin used on current throw?
 
+  // Power-up state
+  activePowerUp: PowerUpDef | null = null;
+  powerUpTimer = 0;
+  powerUpsUsed = new Set<string>();
+  multiBallHits = 0; // Track multi-ball scoring
+  ghostHits = 0; // Track ghost ball multi-hits
+  boostedScore = 0; // Track score while boost active
+
+  // Season state
+  seasonStageIndex = 0;
+  seasonStars: number[] = []; // Stars per stage (0-3)
+
   // Persistent data
   private _achievements: Set<string>;
   private _leaderboard: LeaderboardEntry[];
@@ -508,6 +608,13 @@ class GameStateManager {
     this.xp = this._stats.xp || 0;
     this.level = this._stats.level || 1;
     this.xpForNext = this.calcXpForLevel(this.level + 1);
+    // Restore season stars
+    this.seasonStars = JSON.parse(localStorage.getItem('skee_season_stars') || '[]');
+    if (this.seasonStars.length < SEASON_STAGES.length) {
+      while (this.seasonStars.length < SEASON_STAGES.length) this.seasonStars.push(0);
+    }
+    // Restore power-ups used set
+    this.powerUpsUsed = new Set(JSON.parse(localStorage.getItem('skee_powerups_used') || '[]'));
   }
 
   get achievements() { return this._achievements; }
@@ -551,11 +658,23 @@ class GameStateManager {
   }
 
   registerScore(points: number, isPocket = false) {
-    const multiplied = points * this.comboMultiplier;
+    // Score boost doubles points before combo
+    const boosted = this.activePowerUp?.id === 'scoreboost' ? points * 2 : points;
+    const multiplied = boosted * this.comboMultiplier;
     this.score += multiplied;
     this.lastScore = multiplied;
     this.rollsThisFrame.push(multiplied);
     this.hits++;
+
+    // Track boosted score for achievement
+    if (this.activePowerUp?.id === 'scoreboost') {
+      this.boostedScore += multiplied;
+    }
+
+    // Track ghost hits
+    if (this.activePowerUp?.id === 'ghost') {
+      this.ghostHits++;
+    }
 
     if (isPocket) {
       this.pocketsHitThisFrame.add(points > 0 ? this.pocketsHitThisFrame.size : 0);
@@ -666,6 +785,51 @@ class GameStateManager {
     return this.level >= 15;
   }
 
+  // Season methods
+  saveSeasonStars() {
+    localStorage.setItem('skee_season_stars', JSON.stringify(this.seasonStars));
+  }
+
+  getSeasonTotalStars(): number {
+    return this.seasonStars.reduce((a, b) => a + b, 0);
+  }
+
+  isStageUnlocked(idx: number): boolean {
+    if (idx === 0) return true;
+    // Unlock next stage if previous has at least 1 star
+    return this.seasonStars[idx - 1] > 0;
+  }
+
+  calculateStars(stageIdx: number, score: number): number {
+    const stage = SEASON_STAGES[stageIdx];
+    if (!stage) return 0;
+    if (score >= stage.targetScore) return 3;
+    if (score >= stage.targetScore * 0.7) return 2;
+    if (score >= stage.targetScore * 0.4) return 1;
+    return 0;
+  }
+
+  // Power-up tracking
+  activatePowerUp(pu: PowerUpDef) {
+    this.activePowerUp = pu;
+    this.powerUpTimer = pu.duration;
+    this.powerUpsUsed.add(pu.id);
+    localStorage.setItem('skee_powerups_used', JSON.stringify([...this.powerUpsUsed]));
+    if (pu.id === 'ghost') this.ghostHits = 0;
+    if (pu.id === 'scoreboost') this.boostedScore = 0;
+  }
+
+  updatePowerUpTimer(dt: number): boolean {
+    if (!this.activePowerUp || this.activePowerUp.duration === 0) return false;
+    this.powerUpTimer -= dt;
+    if (this.powerUpTimer <= 0) {
+      this.activePowerUp = null;
+      this.powerUpTimer = 0;
+      return true; // expired
+    }
+    return false;
+  }
+
   checkAchievements(onUnlock: (a: Achievement) => void) {
     const checks: [string, boolean][] = [
       ['first_roll', this._stats.totalRolls >= 1],
@@ -709,6 +873,22 @@ class GameStateManager {
       ['progressive_10', this.mode === 'progressive' && this.progressiveLevel >= 10],
       ['triple_pocket', this._stats.pocketHits >= 3 && this.pocketsHitThisFrame.size >= 2],
       ['no_miss_hard', this.misses === 0 && this.hits > 0 && this.ballsRemaining === 0 && this.difficulty === 'hard'],
+      // Round 3 achievements
+      ['powerup_collect', this.powerUpsUsed.size > 0],
+      ['powerup_all', this.powerUpsUsed.size >= 5],
+      ['multiball_hit', this.multiBallHits >= 3],
+      ['magnet_50', this.activePowerUp?.id === 'magnet' && this.ringsHitThisFrame.has(50)],
+      ['ghost_multi', this.ghostHits >= 3],
+      ['season_stage_1', this.seasonStars.filter(s => s > 0).length >= 1],
+      ['season_stage_4', this.seasonStars.filter(s => s > 0).length >= 4],
+      ['season_complete', this.seasonStars.filter(s => s > 0).length >= 8],
+      ['season_perfect', this.seasonStars.filter(s => s >= 3).length >= 8],
+      ['season_3star', this.seasonStars.some(s => s >= 3)],
+      ['score_3000', this.score >= 3000],
+      ['score_5000', this.score >= 5000],
+      ['total_250k', this._stats.totalScore >= 250000],
+      ['boosted_1000', this.boostedScore >= 1000],
+      ['streak_10', this.maxStreak >= 10],
     ];
     for (const [id, cond] of checks) {
       if (cond && this.unlock(id)) {
@@ -1024,10 +1204,35 @@ async function main() {
           gsm.spinApplied = true;
         }
 
+        // Magnet power-up: curve toward board center
+        if (gsm.activePowerUp?.id === 'magnet') {
+          const toCenter = -pos.x;
+          ballVelocity.x += toCenter * 3.0 * subDt * slowMult;
+          const toMidY = (BOARD_Y - pos.y) * 0.5;
+          ballVelocity.y += toMidY * subDt * slowMult;
+        }
+
+        // Season stage gravity modifier
+        if (gsm.mode === 'season') {
+          const stage = SEASON_STAGES[gsm.seasonStageIndex];
+          if (stage?.modifiers.gravity) {
+            // Additional gravity beyond the base already applied
+            ballVelocity.y -= 9.81 * subDt * slowMult * (stage.modifiers.gravity - 1);
+          }
+        }
+
         // Daily wind modifier
         if (gsm.mode === 'daily') {
           const mods = gsm.getDailyModifiers();
           ballVelocity.x += mods.windX * subDt * slowMult;
+        }
+
+        // Season wind modifier
+        if (gsm.mode === 'season') {
+          const stage = SEASON_STAGES[gsm.seasonStageIndex];
+          if (stage?.modifiers.windX) {
+            ballVelocity.x += stage.modifiers.windX * subDt * slowMult;
+          }
         }
 
         // Check if ball reached scoring board plane
@@ -1100,6 +1305,12 @@ async function main() {
       }
 
       gsm.registerScore(points, isPocket);
+      // Score popup VFX
+      if (ball) {
+        const popColor = isPocket ? gsm.theme.pocket : points >= 50 ? gsm.theme.ring1 : points >= 30 ? gsm.theme.ring3 : gsm.theme.ring5;
+        spawnScorePopup(ball.position.clone(), points * gsm.comboMultiplier, popColor);
+        spawnRingFlash(ball.position.x, ball.position.y - BOARD_Y, popColor);
+      }
       if (isPocket) {
         audio.pocketHit();
         audio.bigHitSound();
@@ -1150,11 +1361,31 @@ async function main() {
         if (gameState === 'scoring' || gameState === 'rolling') {
           createBall();
           gameState = 'aiming';
+          // Chance to spawn power-up for next throw
+          maybeSpawnPowerUp();
         }
       }, 600);
     }
 
     gameState = 'scoring';
+  }
+
+  function maybeSpawnPowerUp() {
+    if (powerUpOrb) return; // Already one active
+    if (gsm.activePowerUp && gsm.activePowerUp.duration > 0) return; // Already have a timed power-up
+    let chance = 0;
+    if (gsm.mode === 'season') {
+      chance = SEASON_STAGES[gsm.seasonStageIndex]?.powerUpChance || 0;
+    } else if (gsm.mode === 'daily' || gsm.mode === 'tournament') {
+      chance = 0.15;
+    } else if (gsm.mode === 'practice') {
+      chance = 0.3; // Higher in practice for fun
+    } else {
+      chance = 0.1; // Low chance in regular modes
+    }
+    if (Math.random() < chance) {
+      spawnPowerUpOrb();
+    }
   }
 
   function endRound() {
@@ -1193,6 +1424,40 @@ async function main() {
       audio.achievementSound();
       showToast('Achievement: ' + a.name);
     });
+
+    // Season mode: show season result instead of game over
+    if (gsm.mode === 'season') {
+      const stageIdx = gsm.seasonStageIndex;
+      const stars = gsm.calculateStars(stageIdx, gsm.score);
+      // Update stars if better
+      if (stars > (gsm.seasonStars[stageIdx] || 0)) {
+        gsm.seasonStars[stageIdx] = stars;
+        gsm.saveSeasonStars();
+      }
+      gsm.checkAchievements((a) => {
+        audio.achievementSound();
+        showToast('Achievement: ' + a.name);
+      });
+      if (stars >= 3) audio.seasonComplete();
+      else if (stars > 0) audio.starEarned();
+      else audio.gameOver();
+      gameState = 'seasonresult';
+      showUI('seasonresult');
+      showHUD(false);
+      updateSeasonResultPanel(stageIdx, stars);
+      // Show XP
+      setTimeout(() => showToast(`+${xpEarned} XP`), 1200);
+      if (didLevel) {
+        setTimeout(() => {
+          audio.achievementSound();
+          showToast(`LEVEL UP! Level ${gsm.level}`);
+        }, 2500);
+      }
+      // Clean up power-up orb
+      removePowerUpOrb();
+      return;
+    }
+
     gameState = 'gameover';
     audio.gameOver();
     showUI('gameover');
@@ -1257,6 +1522,277 @@ async function main() {
       m.position.copy(ballTrail[i].pos);
       world.scene.add(m);
       trailMeshes.push(m);
+    }
+  }
+
+  // ═══ SCORE POPUP VFX ═══
+  const scorePopups: { mesh: Mesh; vel: Vector3; life: number; group: Group }[] = [];
+
+  function spawnScorePopup(pos: Vector3, points: number, color: string) {
+    // Create a small glowing sphere cluster that represents the score visually
+    const group = new Group();
+    group.position.copy(pos);
+    // Size proportional to points
+    const scale = 0.02 + (points / 100) * 0.03;
+    const numDots = Math.min(Math.ceil(points / 20), 8);
+    const c = new Color(color);
+    for (let i = 0; i < numDots; i++) {
+      const dot = new Mesh(
+        new SphereGeometry(scale, 4, 4),
+        new MeshBasicMaterial({ color: c, transparent: true, opacity: 0.9, blending: AdditiveBlending })
+      );
+      dot.position.set(
+        (Math.random() - 0.5) * 0.05,
+        (Math.random() - 0.5) * 0.03,
+        (Math.random() - 0.5) * 0.05
+      );
+      group.add(dot);
+    }
+    // Central glow
+    const glow = new Mesh(
+      new SphereGeometry(scale * 2, 8, 8),
+      new MeshBasicMaterial({ color: c, transparent: true, opacity: 0.4, blending: AdditiveBlending })
+    );
+    group.add(glow);
+    world.scene.add(group);
+    scorePopups.push({
+      mesh: glow, vel: new Vector3(0, 1.5, 0.3), life: 1.2, group
+    });
+    audio.scorePopSound(points);
+  }
+
+  function updateScorePopups(dt: number) {
+    for (let i = scorePopups.length - 1; i >= 0; i--) {
+      const sp = scorePopups[i];
+      sp.group.position.add(sp.vel.clone().multiplyScalar(dt));
+      sp.vel.y += dt * 0.5; // Rise faster
+      sp.life -= dt;
+      const alpha = Math.max(0, sp.life / 1.2);
+      sp.group.children.forEach(c => {
+        (c as Mesh).material && ((c as Mesh).material as MeshBasicMaterial).opacity !== undefined &&
+          ((c as Mesh).material as MeshBasicMaterial).opacity !== 0 && (((c as Mesh).material as MeshBasicMaterial).opacity = alpha);
+      });
+      sp.group.scale.setScalar(1 + (1.2 - sp.life) * 0.5);
+      if (sp.life <= 0) {
+        world.scene.remove(sp.group);
+        scorePopups.splice(i, 1);
+      }
+    }
+  }
+
+  // ═══ RING FLASH EFFECT ═══
+  const ringFlashes: { mesh: Mesh; life: number }[] = [];
+
+  function spawnRingFlash(hitX: number, hitY: number, colorStr: string) {
+    // Bright flash at impact point on the scoring board
+    const flash = new Mesh(
+      new SphereGeometry(0.08, 8, 8),
+      new MeshBasicMaterial({ color: new Color(colorStr), transparent: true, opacity: 1.0, blending: AdditiveBlending })
+    );
+    flash.position.set(hitX, BOARD_Y + hitY, BOARD_Z + 0.05);
+    world.scene.add(flash);
+    ringFlashes.push({ mesh: flash, life: 0.4 });
+
+    // Expanding ring wave
+    const ring = new Mesh(
+      new TorusGeometry(0.02, 0.005, 4, 16),
+      new MeshBasicMaterial({ color: new Color(colorStr), transparent: true, opacity: 0.8, blending: AdditiveBlending })
+    );
+    ring.position.copy(flash.position);
+    ring.rotation.x = Math.PI / 2;
+    world.scene.add(ring);
+    ringFlashes.push({ mesh: ring, life: 0.5 });
+  }
+
+  function updateRingFlashes(dt: number) {
+    for (let i = ringFlashes.length - 1; i >= 0; i--) {
+      const rf = ringFlashes[i];
+      rf.life -= dt;
+      const alpha = Math.max(0, rf.life / 0.5);
+      (rf.mesh.material as MeshBasicMaterial).opacity = alpha;
+      // Expand torus ring
+      if (rf.mesh.geometry instanceof TorusGeometry) {
+        rf.mesh.scale.setScalar(1 + (0.5 - rf.life) * 6);
+      }
+      if (rf.life <= 0) {
+        world.scene.remove(rf.mesh);
+        ringFlashes.splice(i, 1);
+      }
+    }
+  }
+
+  // ═══ POWER-UP ORBS ═══
+  let powerUpOrb: { mesh: Group; def: PowerUpDef; bobPhase: number } | null = null;
+
+  function spawnPowerUpOrb() {
+    if (powerUpOrb) return; // Only one at a time
+    const def = POWER_UP_DEFS[Math.floor(Math.random() * POWER_UP_DEFS.length)];
+    const group = new Group();
+    const color = new Color(def.color);
+
+    // Core sphere
+    const core = new Mesh(
+      new SphereGeometry(0.04, 12, 12),
+      new MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.6, metalness: 0.8, roughness: 0.2 })
+    );
+    group.add(core);
+
+    // Outer glow
+    const glow = new Mesh(
+      new SphereGeometry(0.07, 8, 8),
+      new MeshBasicMaterial({ color, transparent: true, opacity: 0.3, blending: AdditiveBlending })
+    );
+    group.add(glow);
+
+    // Orbiting ring
+    const ring = new Mesh(
+      new TorusGeometry(0.06, 0.005, 4, 16),
+      new MeshBasicMaterial({ color, transparent: true, opacity: 0.6 })
+    );
+    group.add(ring);
+
+    // Position above the lane, slightly randomized
+    const x = (Math.random() - 0.5) * LANE_WIDTH * 0.6;
+    group.position.set(x, LANE_Y + 0.25, LANE_Z + LANE_LENGTH / 2 - 0.8 - Math.random() * 0.8);
+
+    world.scene.add(group);
+    powerUpOrb = { mesh: group, def, bobPhase: Math.random() * Math.PI * 2 };
+  }
+
+  function removePowerUpOrb() {
+    if (powerUpOrb) {
+      world.scene.remove(powerUpOrb.mesh);
+      powerUpOrb = null;
+    }
+  }
+
+  function updatePowerUpOrb(dt: number, time: number) {
+    if (!powerUpOrb) return;
+    // Bob up and down
+    powerUpOrb.bobPhase += dt * 3;
+    powerUpOrb.mesh.position.y = LANE_Y + 0.25 + Math.sin(powerUpOrb.bobPhase) * 0.03;
+    // Rotate the ring
+    const ring = powerUpOrb.mesh.children[2];
+    if (ring) {
+      ring.rotation.x += dt * 2;
+      ring.rotation.z += dt * 1.5;
+    }
+    // Pulse glow
+    const glow = powerUpOrb.mesh.children[1] as Mesh;
+    if (glow) {
+      (glow.material as MeshBasicMaterial).opacity = 0.2 + Math.sin(time * 4) * 0.15;
+    }
+
+    // Check collision with ball
+    if (ball && ballActive) {
+      const dist = ball.position.distanceTo(powerUpOrb.mesh.position);
+      if (dist < 0.12) {
+        collectPowerUp(powerUpOrb.def);
+        removePowerUpOrb();
+      }
+    }
+  }
+
+  function collectPowerUp(def: PowerUpDef) {
+    gsm.activatePowerUp(def);
+    audio.powerUpCollect();
+    showToast(`Power-Up: ${def.name}!`);
+    updatePowerUpHUD();
+
+    // Apply instant power-ups
+    if (def.id === 'multiball') {
+      // Spawn 2 extra balls (visual clones that score independently)
+      gsm.multiBallHits = 0;
+      for (let i = 0; i < 2; i++) {
+        setTimeout(() => spawnExtraBall(i), i * 200 + 100);
+      }
+    }
+    if (def.id === 'bigball' && ball) {
+      ball.scale.setScalar(1.8);
+    }
+
+    gsm.checkAchievements((a) => {
+      audio.achievementSound();
+      showToast('Achievement: ' + a.name);
+    });
+  }
+
+  // Extra balls for multi-ball power-up
+  const extraBalls: { mesh: Mesh; vel: Vector3; active: boolean }[] = [];
+
+  function spawnExtraBall(offsetIdx: number) {
+    if (!ball || !ballActive) return;
+    const skin = gsm.skin;
+    const extra = new Mesh(
+      new SphereGeometry(0.03, 12, 12),
+      new MeshStandardMaterial({ color: new Color(skin.color), emissive: new Color(skin.emissive), emissiveIntensity: 0.5, metalness: 0.6, roughness: 0.3, transparent: true, opacity: 0.7 })
+    );
+    const glw = new Mesh(
+      new SphereGeometry(0.05, 6, 6),
+      new MeshBasicMaterial({ color: new Color('#ff00ff'), transparent: true, opacity: 0.3, blending: AdditiveBlending })
+    );
+    extra.add(glw);
+    extra.position.copy(ball.position);
+    const spread = (offsetIdx === 0 ? -1 : 1) * 0.08;
+    extra.position.x += spread;
+    const vel = ballVelocity.clone();
+    vel.x += spread * 2;
+    world.scene.add(extra);
+    extraBalls.push({ mesh: extra, vel, active: true });
+  }
+
+  function updateExtraBalls(dt: number) {
+    for (let i = extraBalls.length - 1; i >= 0; i--) {
+      const eb = extraBalls[i];
+      if (!eb.active) continue;
+      eb.vel.y -= 9.81 * dt;
+      eb.mesh.position.add(eb.vel.clone().multiplyScalar(dt));
+      // Check if reached board
+      if (eb.mesh.position.z <= BOARD_Z + 0.05) {
+        const hitX = eb.mesh.position.x;
+        const hitY = eb.mesh.position.y - BOARD_Y;
+        // Score the extra ball
+        scoreExtraBall(hitX, hitY);
+        world.scene.remove(eb.mesh);
+        eb.active = false;
+        extraBalls.splice(i, 1);
+      }
+      // Cleanup if fell below
+      if (eb.mesh.position.y < LANE_Y - 0.5) {
+        world.scene.remove(eb.mesh);
+        eb.active = false;
+        extraBalls.splice(i, 1);
+      }
+    }
+  }
+
+  function scoreExtraBall(hitX: number, hitY: number) {
+    const dist = Math.sqrt(hitX * hitX + hitY * hitY);
+    let points = 0;
+    for (const pp of POCKET_POSITIONS) {
+      const dx = hitX - pp.x;
+      const dy = hitY - pp.y;
+      if (Math.sqrt(dx * dx + dy * dy) <= POCKET_RADIUS + 0.02) {
+        points = POCKET_POINTS;
+        break;
+      }
+    }
+    if (points === 0) {
+      for (const ring of RINGS) {
+        if (dist <= ring.outerR) { points = ring.points; break; }
+      }
+      if (points === 0 && dist <= BOARD_RADIUS) points = 10;
+    }
+    if (points > 0) {
+      gsm.score += points;
+      gsm.multiBallHits++;
+      gsm.hits++;
+      audio.ringHit(points);
+      spawnScorePopup(new Vector3(hitX, BOARD_Y + hitY, BOARD_Z + 0.05), points, gsm.theme.accent);
+      spawnRingFlash(hitX, hitY, gsm.theme.ring1);
+      spawnParticles(new Vector3(hitX, BOARD_Y + hitY, BOARD_Z + 0.05), gsm.theme.accent, 8);
+      showToast(`Multi-Ball: +${points}`);
+      updateHUD();
     }
   }
 
@@ -1395,10 +1931,13 @@ async function main() {
   createPanel('stats', 'stats', { width: 0.8, height: 0.7, pos: [0, 1.5, -2] });
   createPanel('skins', 'skins', { width: 0.8, height: 0.6, pos: [0, 1.5, -2] });
   createPanel('tutorial', 'tutorial', { width: 0.8, height: 0.6, pos: [0, 1.5, -2] });
+  createPanel('season', 'season', { width: 0.9, height: 0.9, pos: [0, 1.5, -2] });
+  createPanel('seasonresult', 'seasonresult', { width: 0.8, height: 0.7, pos: [0, 1.5, -2] });
+  createPanel('poweruphud', 'poweruphud', { width: 0.25, height: 0.06, follower: true, pos: [-0.2, 0.06, -0.5] });
 
   // Panel visibility management
   function showUI(name: string) {
-    const allPanels = ['title', 'modeselect', 'difficulty', 'pause', 'gameover', 'leaderboard', 'achievements', 'settings', 'help', 'stats', 'skins', 'tutorial'];
+    const allPanels = ['title', 'modeselect', 'difficulty', 'pause', 'gameover', 'leaderboard', 'achievements', 'settings', 'help', 'stats', 'skins', 'tutorial', 'season', 'seasonresult'];
     allPanels.forEach(p => {
       if (panelEntities[p]?.object3D) panelEntities[p].object3D.visible = (p === name);
     });
@@ -1539,6 +2078,48 @@ async function main() {
     setText(e, 'stat-xp', `${gsm.xp} / ${gsm.xpForNext} XP`);
   }
 
+  function updatePowerUpHUD() {
+    const e = panelEntities['poweruphud'];
+    if (!e) return;
+    if (gsm.activePowerUp && gsm.powerUpTimer > 0) {
+      if (e.object3D) e.object3D.visible = true;
+      setText(e, 'pu-icon', gsm.activePowerUp.id === 'magnet' ? '◎' : gsm.activePowerUp.id === 'bigball' ? '●' : gsm.activePowerUp.id === 'scoreboost' ? '×2' : '★');
+      setText(e, 'pu-name', gsm.activePowerUp.name);
+      setText(e, 'pu-timer', `${Math.ceil(gsm.powerUpTimer)}s`);
+    } else {
+      if (e.object3D) e.object3D.visible = false;
+    }
+  }
+
+  function updateSeasonPanel() {
+    const e = panelEntities['season'];
+    if (!e) return;
+    const totalStars = gsm.getSeasonTotalStars();
+    setText(e, 'total-stars', `★ ${totalStars} / ${SEASON_STAGES.length * 3}`);
+    SEASON_STAGES.forEach((stage, i) => {
+      const stars = gsm.seasonStars[i] || 0;
+      const unlocked = gsm.isStageUnlocked(i);
+      const starStr = '★'.repeat(stars) + '☆'.repeat(3 - stars);
+      setText(e, `stage-name-${i}`, unlocked ? stage.name : '🔒 Locked');
+      setText(e, `stage-stars-${i}`, unlocked ? starStr : '---');
+    });
+  }
+
+  function updateSeasonResultPanel(stageIdx: number, stars: number) {
+    const e = panelEntities['seasonresult'];
+    if (!e) return;
+    const stage = SEASON_STAGES[stageIdx];
+    setText(e, 'sr-stage-name', stage.name);
+    setText(e, 'sr-score', String(gsm.score));
+    setText(e, 'sr-stars', '★'.repeat(stars) + '☆'.repeat(3 - stars));
+    setText(e, 'sr-target', `Target: ${stage.targetScore} for 3★`);
+    const msg = stars >= 3 ? 'PERFECT! ★★★' : stars >= 2 ? 'Great run!' : stars >= 1 ? 'Stage cleared!' : 'Try again!';
+    setText(e, 'sr-msg', msg);
+    // Hide/show next button based on whether next stage exists and is now unlocked
+    const hasNext = stageIdx < SEASON_STAGES.length - 1 && stars > 0;
+    setVisible(e, 'btn-sr-next', hasNext);
+  }
+
   function updateSkinsPanel() {
     const e = panelEntities['skins'];
     if (!e) return;
@@ -1634,7 +2215,43 @@ async function main() {
       bindBtn('modeselect', 'btn-daily', () => { audio.buttonClick(); gsm.mode = 'daily'; gsm.difficulty = 'medium'; startGame(); });
       bindBtn('modeselect', 'btn-practice', () => { audio.buttonClick(); gsm.mode = 'practice'; gsm.difficulty = 'easy'; startGame(); });
       bindBtn('modeselect', 'btn-tournament', () => { audio.buttonClick(); gsm.mode = 'tournament'; gameState = 'difficulty'; showUI('difficulty'); });
+      bindBtn('modeselect', 'btn-season', () => { audio.buttonClick(); gameState = 'season'; showUI('season'); updateSeasonPanel(); });
       bindBtn('modeselect', 'btn-back-mode', () => { audio.buttonClick(); gameState = 'title'; showUI('title'); });
+
+      // Season panel
+      for (let si = 0; si < SEASON_STAGES.length; si++) {
+        bindBtn('season', `btn-stage-${si}`, () => {
+          audio.buttonClick();
+          if (!gsm.isStageUnlocked(si)) {
+            audio.gutterSound();
+            showToast('Complete the previous stage first!');
+            return;
+          }
+          gsm.seasonStageIndex = si;
+          gsm.mode = 'season';
+          gsm.difficulty = 'medium';
+          startGame();
+        });
+      }
+      bindBtn('season', 'btn-back-season', () => { audio.buttonClick(); gameState = 'modeselect'; showUI('modeselect'); });
+
+      // Season result
+      bindBtn('seasonresult', 'btn-sr-retry', () => {
+        audio.buttonClick();
+        gsm.mode = 'season';
+        gsm.difficulty = 'medium';
+        startGame();
+      });
+      bindBtn('seasonresult', 'btn-sr-next', () => {
+        audio.buttonClick();
+        if (gsm.seasonStageIndex < SEASON_STAGES.length - 1) {
+          gsm.seasonStageIndex++;
+          gsm.mode = 'season';
+          gsm.difficulty = 'medium';
+          startGame();
+        }
+      });
+      bindBtn('seasonresult', 'btn-sr-back', () => { audio.buttonClick(); gameState = 'season'; showUI('season'); updateSeasonPanel(); });
 
       // Difficulty
       bindBtn('difficulty', 'btn-easy', () => { audio.buttonClick(); gsm.difficulty = 'easy'; startGame(); });
@@ -1724,7 +2341,24 @@ async function main() {
       gsm.targetRing = gsm.getTargetRing();
     } else if (gsm.mode === 'practice') {
       gsm.ballsRemaining = 999;
+    } else if (gsm.mode === 'season') {
+      const stage = SEASON_STAGES[gsm.seasonStageIndex];
+      gsm.ballsRemaining = stage.balls;
     }
+
+    // Clear power-up state
+    gsm.activePowerUp = null;
+    gsm.powerUpTimer = 0;
+    gsm.multiBallHits = 0;
+    gsm.ghostHits = 0;
+    gsm.boostedScore = 0;
+    removePowerUpOrb();
+    extraBalls.forEach(eb => { if (eb.active) world.scene.remove(eb.mesh); });
+    extraBalls.length = 0;
+    if (panelEntities['poweruphud']?.object3D) panelEntities['poweruphud'].object3D.visible = false;
+
+    // Reset big ball scale
+    if (ball) ball.scale.setScalar(1);
 
     showUI('');
     showHUD(true);
@@ -1843,6 +2477,12 @@ async function main() {
       speed *= gsm.getDailyModifiers().speedMult;
     }
 
+    // Season modifiers
+    if (gsm.mode === 'season') {
+      const stage = SEASON_STAGES[gsm.seasonStageIndex];
+      if (stage?.modifiers.speedMult) speed *= stage.modifiers.speedMult;
+    }
+
     const aimAngle = gsm.aimX * 0.15; // Slight lateral angle
     ballVelocity.set(Math.sin(aimAngle) * speed * 0.3, 0, -speed);
     ballTrail.length = 0;
@@ -1948,6 +2588,23 @@ async function main() {
     updateParticles(dt);
     updateTrail();
     updateDecorations(totalTime);
+    updateScorePopups(dt);
+    updateRingFlashes(dt);
+    updateExtraBalls(dt);
+    updatePowerUpOrb(dt, totalTime);
+
+    // Power-up timer
+    if (gsm.activePowerUp && gsm.activePowerUp.duration > 0) {
+      const expired = gsm.updatePowerUpTimer(dt);
+      updatePowerUpHUD();
+      if (expired) {
+        audio.powerUpExpire();
+        showToast('Power-up expired');
+        // Reset big ball
+        if (ball) ball.scale.setScalar(1);
+        if (panelEntities['poweruphud']?.object3D) panelEntities['poweruphud'].object3D.visible = false;
+      }
+    }
 
     // Bind UI events (retries until panels load)
     bindUIEvents();
