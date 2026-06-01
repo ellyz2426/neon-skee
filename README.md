@@ -1,112 +1,111 @@
-# Neon Breaker VR
+# Neon Skee VR
 
-A holodeck-style brick-breaking game built with [IWSDK](https://iwsdk.dev) (Immersive Web SDK) 0.4.1. Play in VR with XR controllers or in your browser with mouse/keyboard — same codebase, same physics, same neon aesthetic.
+A classic skee-ball arcade game reimagined in VR with a holodeck neon wireframe aesthetic. Built with IWSDK 0.4.1.
 
-**[▶ Play Now](https://ellyz2426.github.io/neon-breaker/)**
+## Play
+
+**Live:** [https://ellyz2426.github.io/neon-skee/](https://ellyz2426.github.io/neon-skee/)
 
 ## Features
 
-### 🎮 8 Game Modes
-- **Classic** — 48 handcrafted levels across 4 zones, 3 lives, full campaign progression
-- **Endless** — Levels loop with escalating difficulty, no end in sight
-- **Time Attack** — 90-second score sprint
-- **Zen** — Unlimited lives, pure relaxation
-- **Daily Challenge** — Seeded daily layout, compete against your own high score
-- **Survival** — Wave-based spawning, 1 life, how long can you last?
-- **Practice** — Replay any previously cleared level
-- **Boss Rush** — All 4 bosses back-to-back, 2x XP rewards
+### Core Gameplay
+- **Classic skee-ball lane** with inclined ramp, bump launcher, and circular scoring board
+- **Physics-based ball rolling** up the ramp with bump-launched projectile arc
+- **5 scoring rings:** 50 (center), 40, 30, 20, 10 (outer) points
+- **2 corner pockets:** 100 points each for precision shots
+- **9 balls per standard frame**
 
-### 🧱 6 Brick Types
-- **Normal** — 1 hit, 100 points
-- **Tough** — 2 hits, 200 points (shows visible damage on hit)
-- **Armored** — 3 hits, 300 points (progressive damage visualization)
-- **Explosive** — 1 hit, 150 points, chain-reaction AoE
-- **Indestructible** — Can't be broken, shapes the puzzle
-- **Golden** — 1 hit, 500 points, always drops a power-up
+### Game Modes
+- **Classic** — Standard 9-ball frame, chase the high score
+- **Speed Round** — Timed rush (45-90 seconds based on difficulty), unlimited balls
+- **Target** — Hit specific ring values called out for bonus scoring
+- **Progressive** — Escalating difficulty with each successful frame
+- **Daily Challenge** — Date-seeded daily game with unique modifiers (wind, ball speed, ring scale)
+- **Tournament** — 4-round bracket against AI scores
+- **Practice** — Unlimited balls, no pressure, perfect for learning
 
-### ⚡ 8 Power-Ups
-Multi-Ball, Wide Paddle, Laser, Shield, Magnet, Slow-Mo, Fireball (pass-through), Mega Ball (3x size)
+### Scoring System
+- Combo multiplier builds with consecutive hits (x1 to x5)
+- Streak tracking for 50+ point hits
+- Per-frame score tracking with accuracy stats
 
-### 🏆 96 Achievements
-Ranging from beginner milestones to mastery challenges: combo streaks, boss defeats, speed clears, survival endurance, career totals, mode completion, and more.
+### Customization
+- **8 ball skins:** Neon Cyan, Solar Flare, Plasma Pink, Ice Crystal, Toxic Green, Void Purple, Chrome Silver, Inferno Red
+- **5 arena themes:** Neon Holodeck, Crimson Arcade, Toxic Neon, Ultra Violet, Solar Blaze
+- Settings persistence via localStorage
 
-### 🎯 4 Boss Levels
-Moving brick formations at levels 12, 24, 36, and 48 — each with unique movement patterns (horizontal, vertical, circular, figure-8).
+### 25 Achievements
+First Roll, Bullseye, Pocket Master, Half Grand, Grand Score, Perfect Frame, Hot Streak, Fire Streak, Ring Collector, No Gutter, Speed Demon, Sharp Eye, Progressive Pro, Daily Player, Champion, Regular, Dedicated, Scorer, High Roller, Combo King, Fashionista, Theme Explorer, Double Pocket, Comeback, Center Stage
 
-### 📈 Progression System
-- 50 player levels with XP scaling
-- 8 ball skins and 7 paddle skins (unlocked through leveling)
-- Career stats tracking: games played, bricks destroyed, combos, play time, per-mode best scores
-- 3 challenge modifiers with XP multiplier bonuses
-- Campaign completion tracking
+### Audio
+- 15+ procedural Web Audio SFX (roll, bump, ring hits, pocket arpeggio, gutter, charge, countdown, game start/end, achievements, combo, button clicks)
+- Ambient synthwave drone (55Hz sine + 82.5Hz triangle pad + LFO)
+- Volume controls for master, SFX, and music
 
-### 🕹️ Controls
-| Action | Browser | VR |
-|--------|---------|-----|
-| Move paddle | Mouse / A/D / ←/→ | Right controller position |
-| Fire / Release magnet | Click | Trigger |
-| Dash | Shift | — |
-| Slam | X | — |
-| Pause | Escape | — |
+### Visual Effects
+- Ball trail with additive blending (skin-colored)
+- Particle bursts on scoring hits (color-coded by ring value)
+- Holodeck environment: neon grid floor/ceiling, 14 floating wireframe decorations with rotation + bob, 40 ambient particles with drift + pulse
+- Scoring board with glowing ring torus geometry and corner pocket spheres
 
-### 🎨 Visual Design
-- 8 arena themes (Neon Holodeck, Crimson Grid, Toxic Neon, Ultra Violet, Solar Blaze, Frozen Abyss, Void Pulse, Emerald Matrix)
-- Ring explosion VFX on brick destruction
-- Brick entry elastic animations per level
-- Brick damage visualization (darkening, roughness, edge fade)
-- Brick glow pulsing (golden and explosive types)
-- Combo visual escalation with paddle glow
-- Screen shake on impacts
-- Paddle dash trail particles
-- Dynamic ball trails with skin-specific colors
-- Wireframe holodeck environment with floating decorations
-- Ambient particle system
+## Controls
 
-### 🔊 Audio
-- Procedural Web Audio engine — no audio file dependencies
-- Arpeggiator music system with chord progression
-- 15+ distinct SFX: brick hit/destroy, explosion, paddle, wall bounce, power-up, ball lost, level complete, game over, boss intro/defeat, laser, shield block, countdown, achievement
-- Per-category volume controls (Master, SFX, Music)
+### Browser
+| Action | Input |
+|--------|-------|
+| Charge throw | Click + Hold |
+| Aim | Move mouse left/right |
+| Roll | Release mouse |
+| Pause | ESC |
+| Rematch | R (game over) |
 
-### 🖥️ Spatial UI (PanelUI)
-All 22 UI panels use IWSDK's native PanelUI system (`.uikitml` templates) — zero HTML DOM overlays:
+### VR
+| Action | Input |
+|--------|-------|
+| Charge throw | Right Trigger (hold) |
+| Aim | Right Thumbstick |
+| Roll | Release Right Trigger |
+| Pause | B Button |
+| Menu interaction | Controller laser pointer |
 
-`title` · `modeselect` · `difficulty` · `hud` · `pause` · `gameover` · `levelcomplete` · `leaderboard` · `achievements` · `settings` · `help` · `toast` · `countdown` · `profile` · `ballskins` · `paddleskins` · `levelup` · `modifiers` · `powerups` · `victory` · `tutorial` · `practiceselect`
+## Technical Details
+- **Framework:** IWSDK 0.4.1 (Immersive Web SDK)
+- **Runtime:** Dual VR + browser (`xr: { offer: 'once' }` + `browserControls`)
+- **UI:** 15 PanelUI `.uikitml` spatial templates, zero HTML DOM overlays
+- **Physics:** Custom ball rolling + projectile arc simulation with 4-substep integration
+- **Audio:** Procedural Web Audio API synthesis
+- **Persistence:** localStorage for achievements, leaderboard, stats, theme, skin
+- **Build:** Vite + TypeScript + esbuild
 
-Head-locked HUD panels (score, combo, active power-ups, wave counter) follow the player's gaze in VR via the `Follower` component.
-
-## Tech Stack
-
-- **IWSDK 0.4.1** — dual-runtime WebXR framework (VR + browser)
-- **Three.js** — 3D rendering (via IWSDK)
-- **PanelUI** — spatial UI system with `.uikitml` templates
-- **Web Audio API** — procedural sound synthesis
-- **TypeScript** — full type safety
-- **Vite** — build and dev server
-- **GitHub Pages** — hosting
-
-## Development
-
-```bash
-npm install
-npx iwsdk dev up        # Start dev server with XR emulation
-npm run build           # Production build
+## Project Structure
+```
+neon-skee/
+  src/
+    index.ts          # Main game (all logic, physics, UI binding)
+    vite-env.d.ts     # Type declarations
+  ui/
+    title.uikitml     # Title screen
+    modeselect.uikitml # Mode selection (7 modes)
+    difficulty.uikitml # Difficulty selection
+    hud.uikitml       # Head-following HUD
+    powerbar.uikitml  # Power charge bar
+    pause.uikitml     # Pause menu
+    gameover.uikitml  # Game over screen
+    leaderboard.uikitml # Top 10 scores
+    achievements.uikitml # 25 achievement slots
+    settings.uikitml  # Theme + volume controls
+    help.uikitml      # Controls + scoring reference
+    toast.uikitml     # Toast notifications
+    countdown.uikitml # 3-2-1-ROLL countdown
+    stats.uikitml     # Career statistics
+    skins.uikitml     # Ball skin selector (8 skins)
+  vite.config.ts
+  package.json
+  tsconfig.json
 ```
 
-## Stats
-
-- **4,895+ lines** of source code (4,254 TypeScript + 641 uikitml)
-- **22 PanelUI templates** — zero HTML DOM
-- **48 handcrafted levels** across 4 themed zones
-- **4 boss encounters** with unique movement patterns
-- **96 achievements** across all modes and milestones
-- **8 arena themes** · 8 ball skins · 7 paddle skins
-- **50-level XP progression** with unlock rewards
-
-## License
-
-MIT
-
----
-
-Built with [IWSDK](https://iwsdk.dev) by [ellyz2426](https://github.com/ellyz2426)
+## Build & Deploy
+```bash
+npm run build
+# Deploy dist/ to GitHub Pages
+```
