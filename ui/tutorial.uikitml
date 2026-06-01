@@ -1,0 +1,22 @@
+<style>
+  .tut-panel { display: flex; flex-direction: column; padding-top: 3; padding-bottom: 3; padding-left: 4; padding-right: 4; background-color: rgba(0,0,0,0.92); border-color: #00ff88; border-width: 0.15; border-radius: 1.5; align-items: center; gap: 1.5; }
+  .tut-title { font-size: 2.5; color: #00ff88; font-weight: bold; }
+  .tut-step { font-size: 1.6; color: #cccccc; }
+  .tut-hint { font-size: 1.2; color: #888888; }
+  .tut-progress { font-size: 1.2; color: #00ff88; }
+  .btn-row { display: flex; flex-direction: row; gap: 1.5; }
+  .btn { padding-top: 1; padding-bottom: 1; padding-left: 2; padding-right: 2; background-color: rgba(0,255,136,0.1); border-color: #00ff88; border-width: 0.08; border-radius: 0.5; cursor: pointer; }
+  .btn-text { font-size: 1.4; color: #00ff88; }
+  .btn-skip { padding-top: 0.5; padding-bottom: 0.5; padding-left: 1.5; padding-right: 1.5; background-color: rgba(255,255,255,0.05); border-color: #666666; border-width: 0.05; border-radius: 0.4; cursor: pointer; }
+  .skip-text { font-size: 1.1; color: #888888; }
+</style>
+<div class="tut-panel">
+  <span class="tut-title">HOW TO PLAY</span>
+  <span id="tut-step-text" class="tut-step">Welcome to Neon Skee!</span>
+  <span id="tut-hint-text" class="tut-hint">Click and hold to charge, release to roll</span>
+  <span id="tut-progress" class="tut-progress">Step 1 / 5</span>
+  <div class="btn-row">
+    <div id="btn-tut-next" class="btn"><span class="btn-text">NEXT</span></div>
+    <div id="btn-tut-skip" class="btn-skip"><span class="skip-text">SKIP</span></div>
+  </div>
+</div>

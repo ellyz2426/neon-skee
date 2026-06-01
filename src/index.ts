@@ -15,7 +15,7 @@ import {
 // TYPES & CONSTANTS
 // ═══════════════════════════════════════════════════
 
-type GameState = 'title' | 'modeselect' | 'difficulty' | 'countdown' | 'aiming' | 'rolling' | 'scoring' | 'paused' | 'gameover' | 'leaderboard' | 'achievements' | 'settings' | 'help' | 'stats' | 'skins';
+type GameState = 'title' | 'modeselect' | 'difficulty' | 'countdown' | 'aiming' | 'rolling' | 'scoring' | 'paused' | 'gameover' | 'leaderboard' | 'achievements' | 'settings' | 'help' | 'stats' | 'skins' | 'tutorial';
 type GameMode = 'classic' | 'speedround' | 'target' | 'progressive' | 'daily' | 'practice' | 'tournament';
 type Difficulty = 'easy' | 'medium' | 'hard';
 
@@ -145,6 +145,53 @@ const ACHIEVEMENTS: Achievement[] = [
   { id: 'double_pocket', name: 'Double Pocket', desc: 'Hit both corner pockets in one frame' },
   { id: 'gutter_comeback', name: 'Comeback', desc: 'Score 100 after a gutter ball' },
   { id: 'triple_50', name: 'Center Stage', desc: 'Hit three 50-point centers in one frame' },
+  // Round 2 achievements
+  { id: 'spin_master', name: 'Spin Master', desc: 'Land a curved ball on the center' },
+  { id: 'score_1500', name: 'Mega Score', desc: 'Score 1500+ in one frame' },
+  { id: 'score_2000', name: 'Legendary', desc: 'Score 2000+ in one frame' },
+  { id: 'streak_7', name: 'On Fire', desc: '7 consecutive 50+ hits' },
+  { id: 'perfect_accuracy', name: 'Sharpshooter', desc: '100% accuracy in a completed frame' },
+  { id: 'speed_1000', name: 'Speed King', desc: 'Score 1000+ in Speed Round' },
+  { id: 'tournament_sweep', name: 'Sweep', desc: 'Win every tournament round' },
+  { id: 'games_100', name: 'Veteran', desc: 'Play 100 games' },
+  { id: 'total_100k', name: 'Legend', desc: 'Accumulate 100,000 career points' },
+  { id: 'all_skins', name: 'Collector', desc: 'Try all 8 ball skins' },
+  { id: 'all_themes', name: 'Interior Designer', desc: 'Try all 5 arena themes' },
+  { id: 'daily_streak_3', name: 'Consistent', desc: 'Complete 3 Daily Challenges' },
+  { id: 'progressive_10', name: 'Endurance', desc: 'Clear 10 progressive frames' },
+  { id: 'triple_pocket', name: 'Pocket Ace', desc: 'Hit 3 pocket shots in one frame' },
+  { id: 'no_miss_hard', name: 'Perfectionist', desc: 'No misses on Hard difficulty' },
+];
+
+// Tournament opponent names and personalities
+interface TournamentOpponent {
+  name: string;
+  title: string;
+  skillMult: number; // score multiplier vs base AI
+}
+
+const TOURNAMENT_OPPONENTS: TournamentOpponent[][] = [
+  // Easy bracket
+  [
+    { name: 'Rookie Ricky', title: 'The Beginner', skillMult: 0.7 },
+    { name: 'Casual Casey', title: 'Weekend Player', skillMult: 0.85 },
+    { name: 'Mid Mike', title: 'League Regular', skillMult: 1.0 },
+    { name: 'Hot Shot Hannah', title: 'Local Champ', skillMult: 1.15 },
+  ],
+  // Medium bracket
+  [
+    { name: 'Steady Sam', title: 'Circuit Regular', skillMult: 0.85 },
+    { name: 'Slick Sally', title: 'The Tactician', skillMult: 1.0 },
+    { name: 'Power Pete', title: 'The Charger', skillMult: 1.1 },
+    { name: 'Ace Anika', title: 'Regional Champ', skillMult: 1.25 },
+  ],
+  // Hard bracket
+  [
+    { name: 'Viper Vic', title: 'The Veteran', skillMult: 1.0 },
+    { name: 'Flash Fiona', title: 'Speed Queen', skillMult: 1.15 },
+    { name: 'Iron Ivan', title: 'The Machine', skillMult: 1.3 },
+    { name: 'Neon Nova', title: 'World Champion', skillMult: 1.5 },
+  ],
 ];
 
 // ═══════════════════════════════════════════════════
@@ -159,6 +206,8 @@ class AudioManager {
   private musicOsc: OscillatorNode | null = null;
   private musicPad: OscillatorNode | null = null;
   private musicLfo: OscillatorNode | null = null;
+  private arpTimer: any = null;
+  private arpNotes: OscillatorNode[] = [];
 
   init() {
     if (this.ctx) return;
@@ -173,6 +222,7 @@ class AudioManager {
     this.musicGain.gain.value = 0.15;
     this.musicGain.connect(this.masterGain);
     this.startAmbient();
+    this.startArpeggiator();
   }
 
   private startAmbient() {
@@ -183,7 +233,7 @@ class AudioManager {
     this.musicOsc.type = 'sine';
     this.musicOsc.frequency.value = 55;
     const droneGain = c.createGain();
-    droneGain.gain.value = 0.4;
+    droneGain.gain.value = 0.25;
     this.musicOsc.connect(droneGain);
     droneGain.connect(this.musicGain);
     this.musicOsc.start();
@@ -192,7 +242,7 @@ class AudioManager {
     this.musicPad.type = 'triangle';
     this.musicPad.frequency.value = 82.5;
     const padGain = c.createGain();
-    padGain.gain.value = 0.2;
+    padGain.gain.value = 0.15;
     const padFilter = c.createBiquadFilter();
     padFilter.type = 'lowpass';
     padFilter.frequency.value = 400;
@@ -208,6 +258,52 @@ class AudioManager {
     this.musicLfo.connect(lfoGain);
     lfoGain.connect(this.musicOsc.frequency);
     this.musicLfo.start();
+  }
+
+  private startArpeggiator() {
+    if (!this.ctx || !this.musicGain) return;
+    // Synthwave arpeggiator — 4-bar loop cycling through chord tones
+    const patterns = [
+      [110, 165, 220, 277, 330, 277, 220, 165],   // Am chord arpeggiation
+      [130.8, 196, 261.6, 330, 392, 330, 261.6, 196], // C chord
+      [146.8, 220, 293.7, 370, 440, 370, 293.7, 220], // D chord
+      [123.5, 185, 247, 311, 370, 311, 247, 185],      // B chord
+    ];
+    let barIdx = 0;
+    let noteIdx = 0;
+    const bpm = 128;
+    const noteInterval = (60 / bpm) * 0.5; // 16th note feel
+
+    const playArpNote = () => {
+      if (!this.ctx || !this.musicGain) return;
+      const c = this.ctx;
+      const freq = patterns[barIdx][noteIdx];
+      const o = c.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.value = freq;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.12, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + noteInterval * 0.9);
+      const f = c.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 1200 + Math.sin(c.currentTime * 0.5) * 600;
+      f.Q.value = 2;
+      o.connect(f);
+      f.connect(g);
+      g.connect(this.musicGain!);
+      o.start();
+      o.stop(c.currentTime + noteInterval);
+      this.arpNotes.push(o);
+      // Cleanup old refs
+      if (this.arpNotes.length > 16) this.arpNotes.splice(0, 8);
+      noteIdx++;
+      if (noteIdx >= patterns[barIdx].length) {
+        noteIdx = 0;
+        barIdx = (barIdx + 1) % patterns.length;
+      }
+    };
+
+    this.arpTimer = setInterval(playArpNote, noteInterval * 1000);
   }
 
   private playTone(freq: number, type: OscillatorType, dur: number, vol = 0.3) {
@@ -307,6 +403,35 @@ class AudioManager {
     this.playTone(440 + level * 100, 'triangle', 0.2, 0.25);
   }
 
+  slowMoSound() {
+    // Deep whoosh for slow-mo
+    if (!this.ctx || !this.sfxGain) return;
+    const c = this.ctx;
+    const o = c.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(300, c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(60, c.currentTime + 0.6);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.3, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.6);
+    o.connect(g);
+    g.connect(this.sfxGain);
+    o.start();
+    o.stop(c.currentTime + 0.6);
+  }
+
+  bigHitSound() {
+    // Dramatic impact sound for 100-point hits
+    this.playTone(80, 'sine', 0.4, 0.4);
+    this.playTone(160, 'triangle', 0.3, 0.2);
+    this.playNoise(0.15, 0.25, 5000);
+  }
+
+  tutorialDing() {
+    this.playTone(880, 'sine', 0.2, 0.25);
+    setTimeout(() => this.playTone(1100, 'sine', 0.15, 0.2), 120);
+  }
+
   setMasterVolume(v: number) { if (this.masterGain) this.masterGain.gain.value = v; }
   setSfxVolume(v: number) { if (this.sfxGain) this.sfxGain.gain.value = v; }
   setMusicVolume(v: number) { if (this.musicGain) this.musicGain.gain.value = v; }
@@ -347,11 +472,26 @@ class GameStateManager {
   tournamentRound = 0;
   tournamentScores: number[] = [];
   tournamentAIScores: number[] = [];
+  spinX = 0; // Ball spin for curve mechanics (-1 to 1)
+  slowMoTimer = 0; // Slow-motion countdown
+  cameraShake = 0; // Camera shake intensity
+  tutorialStep = 0; // Tutorial progression
+  currentOpponent: TournamentOpponent | null = null;
+  curvedBullseye = false; // Track if a curved ball hit center
+
+  // XP / Level system
+  xp = 0;
+  level = 1;
+  xpForNext = 100;
+  levelUpPending = false;
+
+  // Spin tracking
+  spinApplied = false; // Was spin used on current throw?
 
   // Persistent data
   private _achievements: Set<string>;
   private _leaderboard: LeaderboardEntry[];
-  private _stats: { games: number; totalScore: number; bestScore: number; totalRolls: number; totalHits: number; bestCombo: number; skinsUsed: Set<string>; themesUsed: Set<string>; pocketHits: number; fiftyHits: number; dailyPlayed: number; };
+  private _stats: { games: number; totalScore: number; bestScore: number; totalRolls: number; totalHits: number; bestCombo: number; skinsUsed: Set<string>; themesUsed: Set<string>; pocketHits: number; fiftyHits: number; dailyPlayed: number; xp: number; level: number; };
   masterVol = 0.7; sfxVol = 0.8; musicVol = 0.15;
 
   constructor() {
@@ -360,10 +500,14 @@ class GameStateManager {
     const savedStats = JSON.parse(localStorage.getItem('skee_stats') || 'null');
     this._stats = savedStats ? { ...savedStats, skinsUsed: new Set(savedStats.skinsUsed || []), themesUsed: new Set(savedStats.themesUsed || []) } : {
       games: 0, totalScore: 0, bestScore: 0, totalRolls: 0, totalHits: 0, bestCombo: 0,
-      skinsUsed: new Set<string>(), themesUsed: new Set<string>(), pocketHits: 0, fiftyHits: 0, dailyPlayed: 0,
+      skinsUsed: new Set<string>(), themesUsed: new Set<string>(), pocketHits: 0, fiftyHits: 0, dailyPlayed: 0, xp: 0, level: 1,
     };
     this.themeIndex = parseInt(localStorage.getItem('skee_theme') || '0');
     this.skinIndex = parseInt(localStorage.getItem('skee_skin') || '0');
+    // Restore XP/level from stats
+    this.xp = this._stats.xp || 0;
+    this.level = this._stats.level || 1;
+    this.xpForNext = this.calcXpForLevel(this.level + 1);
   }
 
   get achievements() { return this._achievements; }
@@ -484,6 +628,44 @@ class GameStateManager {
   saveTheme() { localStorage.setItem('skee_theme', String(this.themeIndex)); }
   saveSkin() { localStorage.setItem('skee_skin', String(this.skinIndex)); }
 
+  // XP system
+  calcXpForLevel(lvl: number): number { return Math.floor(80 * Math.pow(1.15, lvl - 1)); }
+  
+  awardXp(amount: number): boolean {
+    this.xp += amount;
+    this._stats.xp = this.xp;
+    this._stats.level = this.level;
+    let leveledUp = false;
+    while (this.xp >= this.xpForNext) {
+      this.xp -= this.xpForNext;
+      this.level++;
+      this.xpForNext = this.calcXpForLevel(this.level + 1);
+      leveledUp = true;
+      this.levelUpPending = true;
+    }
+    this._stats.xp = this.xp;
+    this._stats.level = this.level;
+    this.saveStats();
+    return leveledUp;
+  }
+
+  getXpForScore(score: number): number {
+    let base = Math.floor(score / 10);
+    if (this.mode === 'tournament') base = Math.floor(base * 1.5);
+    if (this.mode === 'daily') base = Math.floor(base * 1.3);
+    if (this.difficulty === 'hard') base = Math.floor(base * 1.4);
+    if (this.difficulty === 'easy') base = Math.floor(base * 0.8);
+    return Math.max(5, base);
+  }
+
+  // Skin unlock check: skins 0-3 always available, 4-5 at level 5, 6 at level 10, 7 at level 15
+  isSkinUnlocked(idx: number): boolean {
+    if (idx <= 3) return true;
+    if (idx <= 5) return this.level >= 5;
+    if (idx === 6) return this.level >= 10;
+    return this.level >= 15;
+  }
+
   checkAchievements(onUnlock: (a: Achievement) => void) {
     const checks: [string, boolean][] = [
       ['first_roll', this._stats.totalRolls >= 1],
@@ -511,6 +693,22 @@ class GameStateManager {
       ['double_pocket', this.pocketsHitThisFrame.size >= 2],
       ['gutter_comeback', this.hadGutter && this.lastScore >= 100],
       ['triple_50', this.fiftyCount >= 3],
+      // Round 2 achievements
+      ['spin_master', this.curvedBullseye],
+      ['score_1500', this.score >= 1500],
+      ['score_2000', this.score >= 2000],
+      ['streak_7', this.maxStreak >= 7],
+      ['perfect_accuracy', this.misses === 0 && this.hits >= BALLS_PER_FRAME && this.ballsRemaining === 0],
+      ['speed_1000', this.mode === 'speedround' && this.score >= 1000],
+      ['tournament_sweep', this.mode === 'tournament' && this.tournamentRound >= 4 && this.tournamentScores.every((s, i) => s > this.tournamentAIScores[i])],
+      ['games_100', this._stats.games >= 100],
+      ['total_100k', this._stats.totalScore >= 100000],
+      ['all_skins', this._stats.skinsUsed.size >= 8],
+      ['all_themes', this._stats.themesUsed.size >= 5],
+      ['daily_streak_3', this._stats.dailyPlayed >= 3],
+      ['progressive_10', this.mode === 'progressive' && this.progressiveLevel >= 10],
+      ['triple_pocket', this._stats.pocketHits >= 3 && this.pocketsHitThisFrame.size >= 2],
+      ['no_miss_hard', this.misses === 0 && this.hits > 0 && this.ballsRemaining === 0 && this.difficulty === 'hard'],
     ];
     for (const [id, cond] of checks) {
       if (cond && this.unlock(id)) {
@@ -539,7 +737,14 @@ class GameStateManager {
 
   getAIScore(): number {
     const base = this.difficulty === 'easy' ? 250 : this.difficulty === 'medium' ? 400 : 550;
-    return base + Math.floor(Math.random() * 200);
+    const mult = this.currentOpponent ? this.currentOpponent.skillMult : 1;
+    return Math.floor((base + Math.floor(Math.random() * 200)) * mult);
+  }
+
+  getTournamentOpponent(round: number): TournamentOpponent {
+    const bracketIdx = this.difficulty === 'easy' ? 0 : this.difficulty === 'medium' ? 1 : 2;
+    const bracket = TOURNAMENT_OPPONENTS[bracketIdx];
+    return bracket[Math.min(round, bracket.length - 1)];
   }
 }
 
@@ -807,15 +1012,22 @@ async function main() {
 
       } else if (ballPhase === 'flying') {
         // Projectile motion
-        ballVelocity.y -= 9.81 * subDt;
-        pos.x += ballVelocity.x * subDt;
-        pos.y += ballVelocity.y * subDt;
-        pos.z += ballVelocity.z * subDt;
+        const slowMult = gsm.slowMoTimer > 0 ? 0.3 : 1;
+        ballVelocity.y -= 9.81 * subDt * slowMult;
+        pos.x += ballVelocity.x * subDt * slowMult;
+        pos.y += ballVelocity.y * subDt * slowMult;
+        pos.z += ballVelocity.z * subDt * slowMult;
+
+        // Spin / curve: lateral force proportional to spinX during flight
+        if (Math.abs(gsm.spinX) > 0.05) {
+          ballVelocity.x += gsm.spinX * 2.5 * subDt * slowMult;
+          gsm.spinApplied = true;
+        }
 
         // Daily wind modifier
         if (gsm.mode === 'daily') {
           const mods = gsm.getDailyModifiers();
-          ballVelocity.x += mods.windX * subDt;
+          ballVelocity.x += mods.windX * subDt * slowMult;
         }
 
         // Check if ball reached scoring board plane
@@ -882,15 +1094,32 @@ async function main() {
     ballPhase = 'rolling';
 
     if (points > 0) {
+      // Check for curved bullseye (spin was applied and hit center 50)
+      if (points === 50 && gsm.spinApplied && Math.abs(gsm.spinX) > 0.2) {
+        gsm.curvedBullseye = true;
+      }
+
       gsm.registerScore(points, isPocket);
       if (isPocket) {
         audio.pocketHit();
-        spawnParticles(ball!.position.clone(), gsm.theme.pocket, 20);
+        audio.bigHitSound();
+        spawnParticles(ball!.position.clone(), gsm.theme.pocket, 25);
+        // Slow-mo and shake on pocket hits
+        gsm.slowMoTimer = 0.6;
+        gsm.cameraShake = 0.4;
+        audio.slowMoSound();
+      } else if (points >= 50) {
+        audio.ringHit(points);
+        spawnParticles(ball!.position.clone(), gsm.theme.ring1, 18);
+        gsm.cameraShake = 0.15;
       } else {
         audio.ringHit(points);
-        spawnParticles(ball!.position.clone(), points >= 50 ? gsm.theme.ring1 : points >= 30 ? gsm.theme.ring3 : gsm.theme.ring5, 12);
+        spawnParticles(ball!.position.clone(), points >= 30 ? gsm.theme.ring3 : gsm.theme.ring5, 12);
       }
-      if (gsm.combo > 1) audio.comboSound(gsm.combo);
+      if (gsm.combo > 1) {
+        audio.comboSound(gsm.combo);
+        if (gsm.combo >= 5) gsm.cameraShake = Math.max(gsm.cameraShake, 0.2);
+      }
       showToast(`+${points * gsm.comboMultiplier}${gsm.comboMultiplier > 1 ? ' x' + gsm.comboMultiplier : ''}`);
     } else {
       gsm.registerMiss();
@@ -957,6 +1186,9 @@ async function main() {
       }
     }
     gsm.endGame();
+    // Award XP
+    const xpEarned = gsm.getXpForScore(gsm.score);
+    const didLevel = gsm.awardXp(xpEarned);
     gsm.checkAchievements((a) => {
       audio.achievementSound();
       showToast('Achievement: ' + a.name);
@@ -965,6 +1197,14 @@ async function main() {
     audio.gameOver();
     showUI('gameover');
     updateGameOverPanel();
+    // Show XP earned in toast
+    setTimeout(() => showToast(`+${xpEarned} XP`), 1200);
+    if (didLevel) {
+      setTimeout(() => {
+        audio.achievementSound();
+        showToast(`LEVEL UP! Level ${gsm.level}`);
+      }, 2500);
+    }
   }
 
   // ═══ PARTICLES ═══
@@ -1154,10 +1394,11 @@ async function main() {
   createPanel('countdown', 'countdown', { width: 0.2, height: 0.15, follower: true, pos: [0, 0, -0.5] });
   createPanel('stats', 'stats', { width: 0.8, height: 0.7, pos: [0, 1.5, -2] });
   createPanel('skins', 'skins', { width: 0.8, height: 0.6, pos: [0, 1.5, -2] });
+  createPanel('tutorial', 'tutorial', { width: 0.8, height: 0.6, pos: [0, 1.5, -2] });
 
   // Panel visibility management
   function showUI(name: string) {
-    const allPanels = ['title', 'modeselect', 'difficulty', 'pause', 'gameover', 'leaderboard', 'achievements', 'settings', 'help', 'stats', 'skins'];
+    const allPanels = ['title', 'modeselect', 'difficulty', 'pause', 'gameover', 'leaderboard', 'achievements', 'settings', 'help', 'stats', 'skins', 'tutorial'];
     allPanels.forEach(p => {
       if (panelEntities[p]?.object3D) panelEntities[p].object3D.visible = (p === name);
     });
@@ -1204,6 +1445,9 @@ async function main() {
     setText(e, 'score-value', String(gsm.score));
     setText(e, 'balls-value', String(gsm.ballsRemaining));
     setText(e, 'combo-value', gsm.comboMultiplier > 1 ? `x${gsm.comboMultiplier}` : '');
+    // Spin indicator
+    const spinStr = Math.abs(gsm.spinX) > 0.1 ? (gsm.spinX > 0 ? '→' : '←') + ` ${Math.round(Math.abs(gsm.spinX) * 100)}%` : '';
+    setText(e, 'spin-value', spinStr);
     if (gsm.mode === 'speedround') {
       setText(e, 'time-value', String(Math.ceil(gsm.timeRemaining)));
     } else {
@@ -1214,6 +1458,8 @@ async function main() {
     } else {
       setText(e, 'target-value', '');
     }
+    // Level badge
+    setText(e, 'level-value', `Lv.${gsm.level}`);
   }
 
   function updatePowerBar() {
@@ -1223,7 +1469,8 @@ async function main() {
     const bar = '|'.repeat(filled) + '.'.repeat(10 - filled);
     setText(e, 'power-fill', bar);
     const color = gsm.power < 0.5 ? '#00ff88' : gsm.power < 0.8 ? '#ffaa00' : '#ff2222';
-    setText(e, 'power-label', gsm.power > 0 ? `${Math.round(gsm.power * 100)}%` : 'AIM');
+    const spinLabel = Math.abs(gsm.spinX) > 0.1 ? ` ${gsm.spinX > 0 ? '→' : '←'}` : '';
+    setText(e, 'power-label', gsm.power > 0 ? `${Math.round(gsm.power * 100)}%${spinLabel}` : 'AIM');
   }
 
   function updateGameOverPanel() {
@@ -1233,6 +1480,9 @@ async function main() {
     setText(e, 'accuracy', `${gsm.accuracy}%`);
     setText(e, 'max-combo', `x${gsm.maxCombo}`);
     setText(e, 'hits-misses', `${gsm.hits} / ${gsm.misses}`);
+    setText(e, 'xp-earned', `+${gsm.getXpForScore(gsm.score)} XP`);
+    setText(e, 'player-level', `Level ${gsm.level}`);
+    setText(e, 'xp-progress', `${gsm.xp} / ${gsm.xpForNext}`);
 
     if (gsm.mode === 'tournament') {
       const playerTotal = gsm.tournamentScores.reduce((a, b) => a + b, 0);
@@ -1285,13 +1535,19 @@ async function main() {
     setText(e, 'stat-combo', String(s.bestCombo));
     setText(e, 'stat-pockets', String(s.pocketHits));
     setText(e, 'stat-fifties', String(s.fiftyHits));
+    setText(e, 'stat-level', `Level ${gsm.level}`);
+    setText(e, 'stat-xp', `${gsm.xp} / ${gsm.xpForNext} XP`);
   }
 
   function updateSkinsPanel() {
     const e = panelEntities['skins'];
     if (!e) return;
     BALL_SKINS.forEach((sk, i) => {
-      setText(e, `skin-name-${i}`, `${i === gsm.skinIndex ? '> ' : '  '}${sk.name}`);
+      const unlocked = gsm.isSkinUnlocked(i);
+      const selected = i === gsm.skinIndex;
+      const prefix = selected ? '> ' : '  ';
+      const lock = unlocked ? '' : ` [Lv.${i <= 5 ? 5 : i === 6 ? 10 : 15}]`;
+      setText(e, `skin-name-${i}`, `${prefix}${sk.name}${lock}`);
     });
   }
 
@@ -1304,6 +1560,47 @@ async function main() {
     setText(e, 'music-vol', `${Math.round(gsm.musicVol * 100)}%`);
   }
 
+  // ═══ TUTORIAL SYSTEM ═══
+  const TUTORIAL_STEPS = [
+    { text: 'Welcome to Neon Skee!', hint: 'A futuristic skee-ball game in VR + browser' },
+    { text: 'Click & Hold to charge power', hint: 'In VR: hold the right trigger' },
+    { text: 'Move mouse to aim left/right', hint: 'In VR: use the right thumbstick' },
+    { text: 'Release to roll the ball up the ramp', hint: 'The ball launches off the bump into the scoring board' },
+    { text: 'Drag mouse sideways while charging for spin', hint: 'Spin curves the ball in flight — land a curved bullseye for the Spin Master achievement!' },
+    { text: 'Hit rings for points: center = 50, corners = 100', hint: 'Build combos for score multipliers up to x5!' },
+    { text: 'Earn XP to level up and unlock ball skins', hint: 'Hard mode and tournaments give bonus XP' },
+  ];
+
+  function updateTutorialPanel() {
+    const e = panelEntities['tutorial'];
+    if (!e) return;
+    const step = TUTORIAL_STEPS[gsm.tutorialStep] || TUTORIAL_STEPS[0];
+    setText(e, 'tut-step-text', step.text);
+    setText(e, 'tut-hint-text', step.hint);
+    setText(e, 'tut-progress', `Step ${gsm.tutorialStep + 1} / ${TUTORIAL_STEPS.length}`);
+  }
+
+  function showTutorial() {
+    gsm.tutorialStep = 0;
+    gameState = 'tutorial';
+    showUI('tutorial');
+    updateTutorialPanel();
+  }
+
+  function advanceTutorial() {
+    gsm.tutorialStep++;
+    if (gsm.tutorialStep >= TUTORIAL_STEPS.length) {
+      // Tutorial done — go to mode select
+      localStorage.setItem('skee_tutorial_done', '1');
+      audio.tutorialDing();
+      gameState = 'modeselect';
+      showUI('modeselect');
+    } else {
+      audio.tutorialDing();
+      updateTutorialPanel();
+    }
+  }
+
   // ═══ UI EVENT BINDING ═══
   let uiBound = false;
   function bindUIEvents() {
@@ -1313,7 +1610,15 @@ async function main() {
     // Retry binding periodically since PanelUI loads async
     const bind = () => {
       // Title
-      bindBtn('title', 'btn-play', () => { audio.init(); audio.buttonClick(); gameState = 'modeselect'; showUI('modeselect'); });
+      bindBtn('title', 'btn-play', () => {
+        audio.init(); audio.buttonClick();
+        // Show tutorial first time
+        if (!localStorage.getItem('skee_tutorial_done')) {
+          showTutorial();
+        } else {
+          gameState = 'modeselect'; showUI('modeselect');
+        }
+      });
       bindBtn('title', 'btn-leaderboard', () => { audio.buttonClick(); gameState = 'leaderboard'; showUI('leaderboard'); updateLeaderboardPanel(); });
       bindBtn('title', 'btn-achievements', () => { audio.buttonClick(); gameState = 'achievements'; showUI('achievements'); updateAchievementsPanel(); });
       bindBtn('title', 'btn-settings', () => { audio.buttonClick(); gameState = 'settings'; showUI('settings'); updateSettingsPanel(); });
@@ -1348,6 +1653,7 @@ async function main() {
       bindBtn('leaderboard', 'btn-back-lb', () => { audio.buttonClick(); gameState = 'title'; showUI('title'); });
       bindBtn('achievements', 'btn-back-ach', () => { audio.buttonClick(); gameState = 'title'; showUI('title'); });
       bindBtn('help', 'btn-back-help', () => { audio.buttonClick(); gameState = 'title'; showUI('title'); });
+      bindBtn('help', 'btn-tutorial-replay', () => { audio.buttonClick(); showTutorial(); });
       bindBtn('stats', 'btn-back-stats', () => { audio.buttonClick(); gameState = 'title'; showUI('title'); });
       bindBtn('skins', 'btn-back-skins', () => { audio.buttonClick(); gameState = 'title'; showUI('title'); });
 
@@ -1364,7 +1670,23 @@ async function main() {
 
       // Skins
       BALL_SKINS.forEach((_, i) => {
-        bindBtn('skins', `btn-skin-${i}`, () => { audio.buttonClick(); gsm.skinIndex = i; gsm.saveSkin(); updateSkinsPanel(); });
+        bindBtn('skins', `btn-skin-${i}`, () => {
+          if (!gsm.isSkinUnlocked(i)) {
+            audio.gutterSound();
+            showToast(`Reach Level ${i <= 5 ? 5 : i === 6 ? 10 : 15} to unlock`);
+            return;
+          }
+          audio.buttonClick(); gsm.skinIndex = i; gsm.saveSkin(); updateSkinsPanel();
+        });
+      });
+
+      // Tutorial
+      bindBtn('tutorial', 'btn-tut-next', () => { audio.buttonClick(); advanceTutorial(); });
+      bindBtn('tutorial', 'btn-tut-skip', () => {
+        audio.buttonClick();
+        localStorage.setItem('skee_tutorial_done', '1');
+        gameState = 'modeselect';
+        showUI('modeselect');
       });
     };
 
@@ -1450,7 +1772,12 @@ async function main() {
     chargeStart = performance.now();
     gsm.charging = true;
     gsm.power = 0;
+    gsm.spinX = 0;
+    gsm.spinApplied = false;
+    lastMouseX = e.clientX;
   });
+
+  let lastMouseX = 0;
 
   container.addEventListener('mousemove', (e) => {
     if (gameState === 'aiming') {
@@ -1460,6 +1787,12 @@ async function main() {
       if (ball && !ballActive) {
         resetBallPosition();
       }
+      // Track spin from mouse drag while charging
+      if (gsm.charging && mouseDown) {
+        const dx = e.clientX - lastMouseX;
+        gsm.spinX = Math.max(-1, Math.min(1, gsm.spinX + dx * 0.005));
+      }
+      lastMouseX = e.clientX;
     }
   });
 
@@ -1549,6 +1882,8 @@ async function main() {
         chargeStart = performance.now();
         gsm.charging = true;
         gsm.power = 0;
+        gsm.spinX = 0;
+        gsm.spinApplied = false;
       }
       if (triggerUp && gsm.charging && gameState === 'aiming') {
         gsm.charging = false;
@@ -1568,12 +1903,36 @@ async function main() {
       }
       if (thumbstick && gameState === 'aiming') {
         gsm.aimX = Math.max(-1, Math.min(1, gsm.aimX + thumbstick.x * dt * 2));
+        // Thumbstick Y controls spin while charging
+        if (gsm.charging) {
+          gsm.spinX = Math.max(-1, Math.min(1, gsm.spinX + thumbstick.x * dt * 3));
+        }
         if (ball && !ballActive) resetBallPosition();
       }
     }
 
     // Update ball physics
     if (ballActive) updateBall(dt);
+
+    // Slow-mo timer decay
+    if (gsm.slowMoTimer > 0) {
+      gsm.slowMoTimer -= dt;
+      if (gsm.slowMoTimer < 0) gsm.slowMoTimer = 0;
+    }
+
+    // Camera shake
+    if (gsm.cameraShake > 0) {
+      gsm.cameraShake -= dt * 2;
+      if (gsm.cameraShake < 0) gsm.cameraShake = 0;
+      // Apply subtle shake offset to decorations (visual feel without moving camera)
+      const shakeX = (Math.random() - 0.5) * gsm.cameraShake * 0.02;
+      const shakeY = (Math.random() - 0.5) * gsm.cameraShake * 0.02;
+      laneGroup.position.x = shakeX;
+      laneGroup.position.z = shakeY;
+    } else {
+      laneGroup.position.x = 0;
+      laneGroup.position.z = 0;
+    }
 
     // Speed round timer
     if (gsm.mode === 'speedround' && (gameState === 'aiming' || gameState === 'rolling' || gameState === 'scoring')) {

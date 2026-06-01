@@ -6,6 +6,8 @@
   .go-label { font-size: 1.2; color: #888888; }
   .go-value { font-size: 2.5; color: #00ffff; font-weight: bold; }
   .go-accent { font-size: 1.8; color: #ff00ff; }
+  .go-xp { font-size: 1.4; color: #ffaa00; font-weight: bold; }
+  .go-level { font-size: 1.2; color: #cccccc; }
   .btn-row { display: flex; flex-direction: row; gap: 1.5; }
   .btn { padding-top: 1; padding-bottom: 1; padding-left: 2.5; padding-right: 2.5; background-color: rgba(0,255,255,0.1); border-color: #00ffff; border-width: 0.08; border-radius: 0.5; cursor: pointer; }
   .btn-text { font-size: 1.6; color: #00ffff; }
@@ -31,6 +33,15 @@
     <div class="go-item">
       <span class="go-label">HITS / MISSES</span>
       <span id="hits-misses" class="go-accent">0 / 0</span>
+    </div>
+  </div>
+  <div class="go-row">
+    <div class="go-item">
+      <span id="xp-earned" class="go-xp">+0 XP</span>
+    </div>
+    <div class="go-item">
+      <span id="player-level" class="go-level">Level 1</span>
+      <span id="xp-progress" class="go-level">0 / 100</span>
     </div>
   </div>
   <span id="tournament-result" class="tourn-result"></span>

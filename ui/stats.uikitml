@@ -4,11 +4,14 @@
   .stat-row { display: flex; flex-direction: row; gap: 1; align-items: center; }
   .stat-label { font-size: 1.3; color: #888888; width: 14; }
   .stat-value { font-size: 1.3; color: #00ffff; font-weight: bold; }
+  .stat-xp { font-size: 1.3; color: #ffaa00; font-weight: bold; }
   .back-btn { padding-top: 0.5; padding-bottom: 0.5; padding-left: 1.5; padding-right: 1.5; background-color: rgba(255,255,255,0.05); border-color: #666666; border-width: 0.05; border-radius: 0.4; cursor: pointer; }
   .back-text { font-size: 1.2; color: #888888; }
 </style>
 <div class="stats-panel">
   <span class="stats-title">CAREER STATS</span>
+  <div class="stat-row"><span class="stat-label">Level</span><span id="stat-level" class="stat-xp">Level 1</span></div>
+  <div class="stat-row"><span class="stat-label">XP Progress</span><span id="stat-xp" class="stat-xp">0 / 100 XP</span></div>
   <div class="stat-row"><span class="stat-label">Games Played</span><span id="stat-games" class="stat-value">0</span></div>
   <div class="stat-row"><span class="stat-label">Total Score</span><span id="stat-total" class="stat-value">0</span></div>
   <div class="stat-row"><span class="stat-label">Best Score</span><span id="stat-best" class="stat-value">0</span></div>
